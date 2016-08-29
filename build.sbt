@@ -1,8 +1,10 @@
 name := "akka-cluster-custom-downing"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.0.1"
 
 organization := "github.com/TanUkkii007"
+
+homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
 
 scalaVersion := "2.11.8"
 
@@ -46,3 +48,7 @@ executeTests in Test <<= (executeTests in Test, executeTests in MultiJvm) map {
 }
 
 configs(MultiJvm)
+
+BintrayPlugin.autoImport.bintrayPackage := "akka-cluster-custom-downing"
+
+enablePlugins(BintrayPlugin)
