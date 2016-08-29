@@ -1,3 +1,11 @@
+/**
+  * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+  * 2016- Modified by Yusuke Yasuda
+  *
+  * original source code is from
+  * https://github.com/akka/akka/blob/master/akka-cluster/src/test/scala/akka/cluster/AutoDownSpec.scala
+  */
+
 package tanukki.akka.cluster.autodown
 
 import akka.actor._
@@ -43,13 +51,6 @@ class LeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRolesS
     system.actorOf(Props(classOf[LeaderAutoDownRolesTestActor], testRole, autoDownUnreachableAfter, testActor))
 
   "LeaderAutoDownRoles" must {
-
-    /**
-      * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
-      *
-      * Below tests are originated from
-      * https://github.com/akka/akka/blob/master/akka-cluster/src/test/scala/akka/cluster/AutoDownSpec.scala
-      */
 
     "down unreachable when leader" in {
       val a = autoDownActor(Duration.Zero)
