@@ -1,4 +1,5 @@
 #  akka-cluster-custom-downing
+[![CircleCI](https://circleci.com/gh/TanUkkii007/akka-cluster-custom-downing.svg?style=svg)](https://circleci.com/gh/TanUkkii007/akka-cluster-custom-downing)
 
 ## Introduction
 
