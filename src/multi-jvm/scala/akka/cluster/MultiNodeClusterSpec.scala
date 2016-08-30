@@ -1,5 +1,6 @@
 /**
   * Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
+  * 2016- Modified by Yusuke Yasuda
   */
 package akka.cluster
 
@@ -294,8 +295,27 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
       awaitAssert(clusterView.members.map(_.status) should ===(Set(MemberStatus.Up)))
       // clusterView.leader is updated by LeaderChanged, await that to be updated also
       val expectedLeader = clusterView.members.headOption.map(_.address)
-      println("expectedLeader", expectedLeader)
       awaitAssert(clusterView.leader should ===(expectedLeader))
+    }
+  }
+
+  /**
+    * check members are stay unreachable for specified duration
+    */
+  def remainMembersUnreachable(
+                               numberOfMembers: Int,
+                               unreachableMember: Set[Address] = Set.empty,
+                               duration: FiniteDuration = 25.seconds,
+                               interval: FiniteDuration = 1 second): Unit = {
+    var t = 0 seconds
+
+    while (t < duration) {
+      awaitAssert(clusterView.members.size should ===(numberOfMembers))
+      awaitAssert(clusterView.members.map(_.status) should ===(Set(MemberStatus.Up)))
+      awaitAssert(clusterView.unreachableMembers.map(_.status) should ===(Set(MemberStatus.Up)))
+      awaitAssert(unreachableMember.foreach(a => clusterView.unreachableMembers.map(_.address) should contain(a)))
+      Thread.sleep(interval.toMillis)
+      t += interval
     }
   }
 

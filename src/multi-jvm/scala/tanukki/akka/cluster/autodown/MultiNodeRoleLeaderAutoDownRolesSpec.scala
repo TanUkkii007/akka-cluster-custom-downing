@@ -112,16 +112,18 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
         // mark the node as unreachable in the failure detector
         markNodeAsUnavailable(thirdAddress)
 
-        Thread.sleep(5000)
-
         // ROLE LEADER SHOULD NOT DOWN UNREACHABLE MEMBER WITH DIFFERENT TARGET ROLE
 
-        awaitMembersUp(numberOfMembers = 3, canNotBePartOfMemberRing = Set(), 30.seconds)
+        remainMembersUnreachable(numberOfMembers = 3, unreachableMember = Set(thirdAddress), 10 seconds)
       }
 
       runOn(node_A_2) {
         enterBarrier("down-third-node")
-        awaitMembersUp(numberOfMembers = 3, canNotBePartOfMemberRing = Set(), 30 seconds)
+        remainMembersUnreachable(numberOfMembers = 3, unreachableMember = Set(thirdAddress), 10 seconds)
+      }
+
+      runOn(node_A_3) {
+        enterBarrier("down-third-node")
       }
 
       enterBarrier("await-completion-3")
