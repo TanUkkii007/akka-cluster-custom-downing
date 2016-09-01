@@ -8,14 +8,14 @@ import scala.collection.JavaConverters._
 
 final class RoleLeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider {
 
-  private def cluster = Cluster(system)
+  private def clusterSettings = Cluster(system).settings
 
-  override def downRemovalMargin: FiniteDuration = cluster.downingProvider.downRemovalMargin
+  override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
 
   override def downingActorProps: Option[Props] = {
     val leaderRole = system.settings.config.getString("custom-downing.role-leader-auto-downing-roles.leader-role")
     val roles = system.settings.config.getStringList("custom-downing.role-leader-auto-downing-roles.target-roles").asScala.toSet
-    cluster.settings.AutoDownUnreachableAfter match {
+    clusterSettings.AutoDownUnreachableAfter match {
       case d: FiniteDuration => if (roles.isEmpty) None else Some(RoleLeaderAutoDownRoles.props(leaderRole, roles, d))
       case _ =>
         throw new ConfigurationException("LeaderAutoDowningRoles downing provider selected but 'akka.cluster.auto-down-unreachable-after' not set")
