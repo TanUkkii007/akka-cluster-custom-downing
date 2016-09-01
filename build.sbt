@@ -51,4 +51,4 @@ configs(MultiJvm)
 
 BintrayPlugin.autoImport.bintrayPackage := "akka-cluster-custom-downing"
 
-enablePlugins(BintrayPlugin)
+enablePlugins(BintrayPlugin, ReleasePlugin)
