@@ -47,6 +47,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   override def postStop(): Unit = {
     scheduledUnreachable.values foreach { _.cancel }
+    super.postStop()
   }
 
   def receive = {
