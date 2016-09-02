@@ -44,6 +44,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
   def receive = {
     case state: CurrentClusterState =>
       leader = state.leader.exists(_ == selfAddress)
+      roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress))
       state.unreachable foreach unreachableMember
 
     case UnreachableMember(m) => unreachableMember(m)
