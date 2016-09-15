@@ -13,6 +13,7 @@ import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus.{Exiting, Down}
 import akka.cluster._
 
+import scala.collection.immutable
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
 object CustomDowning {
@@ -35,6 +36,8 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
 
+  def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
+
   import context.dispatcher
 
   val skipMemberStatus = Set[MemberStatus](Down, Exiting)
@@ -44,6 +47,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   private var leader = false
   private var roleLeader: Map[String, Boolean] = Map.empty
+  private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
 
   override def postStop(): Unit = {
     scheduledUnreachable.values foreach { _.cancel }
@@ -54,12 +58,24 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     case state: CurrentClusterState =>
       leader = state.leader.exists(_ == selfAddress)
       roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress))
+      membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot {m =>
+        m.status == MemberStatus.Removed
+      }
       state.unreachable foreach unreachableMember
 
+    case MemberUp(m) =>
+      replaceMember(m)
     case UnreachableMember(m) => unreachableMember(m)
 
     case ReachableMember(m)   => remove(m)
-    case MemberRemoved(m, _)  => remove(m)
+    case MemberLeft(m) =>
+      replaceMember(m)
+    case MemberExited(m) =>
+      replaceMember(m)
+    case MemberRemoved(m, prev)  =>
+      remove(m)
+      removeMember(m)
+      onMemberRemoved(m, prev)
 
     case LeaderChanged(leaderOption) =>
       leader = leaderOption.exists(_ == selfAddress)
@@ -97,6 +113,15 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     pendingUnreachable -= member
   }
 
+  def replaceMember(member: Member): Unit = {
+    membersByAge -= member
+    membersByAge += member
+  }
+
+  def removeMember(member: Member): Unit = {
+    membersByAge -= member
+  }
+
   def isLeader: Boolean = leader
 
   def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
@@ -112,4 +137,23 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     pendingUnreachable = Set.empty
   }
 
+  def isAllIntermediateMemberRemoved = {
+    val isUnsafe = membersByAge.exists { m =>
+      m.status == MemberStatus.Down || m.status == MemberStatus.Exiting
+    }
+    !isUnsafe
+  }
+
+  def isOldestUnsafe(role: Option[String]): Boolean = {
+    val targetMember = role.fold(membersByAge)(r => membersByAge.filter(_.hasRole(r)))
+    targetMember.headOption.map(_.address).contains(selfAddress)
+  }
+
+  def isOldest: Boolean = {
+    isAllIntermediateMemberRemoved && isOldestUnsafe(None)
+  }
+
+  def isOldestOf(role: Option[String]): Boolean = {
+    isAllIntermediateMemberRemoved && isOldestUnsafe(role)
+  }
 }
