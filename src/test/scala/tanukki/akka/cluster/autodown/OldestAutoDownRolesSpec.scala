@@ -133,6 +133,17 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
       expectNoMsg(3.second)
     }
 
+    "not down unreachable when there is a Down member right after down a member" in {
+      val a = autoDownActor(Duration.Zero)
+      val second = initialMembersByAge.drop(1).head
+      val third = initialMembersByAge.drop(2).head
+      a ! CurrentClusterState(members = initialMembersByAge)
+      a ! UnreachableMember(second)
+      expectMsg(DownCalled(second.address))
+      a ! UnreachableMember(third)
+      expectNoMsg(3.second)
+    }
+
     "down unreachable when Down members are removed" in {
       val a = autoDownActor(2.seconds)
       val second = initialMembersByAge.drop(1).head

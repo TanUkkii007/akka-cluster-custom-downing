@@ -1,5 +1,6 @@
 package tanukki.akka.cluster.autodown
 
+import akka.cluster.MemberStatus.Down
 import akka.cluster.{MemberStatus, Member}
 
 import scala.concurrent.duration.FiniteDuration
@@ -16,6 +17,7 @@ abstract class OldestAutoDownRolesBase(oldestMemberRole: Option[String], targetR
     if (targetRoles.exists(role => member.hasRole(role))) {
       if (isOldestOf(oldestMemberRole)) {
         down(member.address)
+        replaceMember(member.copy(Down))
       } else {
         pendingAsUnreachable(member)
       }
