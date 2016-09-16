@@ -65,9 +65,13 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
     case MemberUp(m) =>
       replaceMember(m)
-    case UnreachableMember(m) => unreachableMember(m)
+    case UnreachableMember(m) =>
+      replaceMember(m)
+      unreachableMember(m)
 
-    case ReachableMember(m)   => remove(m)
+    case ReachableMember(m)   =>
+      replaceMember(m)
+      remove(m)
     case MemberLeft(m) =>
       replaceMember(m)
     case MemberExited(m) =>
