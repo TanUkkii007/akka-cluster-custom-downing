@@ -69,4 +69,31 @@ custom-downing {
 }
 ```
 
+### OldestAutoDowningRoles
+
+`OldestAutoDowningRoles` automatically downs nodes with specified roles.
+A node responsible to down is the oldest member of a specified role.
+If `oldest-member-role` is not specified, the oldest member among all cluster members fulfill its duty.
+
+You can enable this strategy with following configuration.
+
+```
+akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowningRoles"
+
+akka.cluster.auto-down-unreachable-after = 20s
+
+custom-downing {
+  oldest-auto-downing-roles {
+    oldest-member-role = ""
+    target-roles = []
+  }
+}
+```
+
+Unlike leader based downing strategy, the oldest based downing strategy is much safer.
+It is because the oldest member is uniquely determined by all members even if gossip is not converged, 
+while different leader might be viewed by members under gossip unconvergence.
+
+Downside of the oldest based downing strategy is lost of downing function when the oldest member itself fails.
+
 ## Example
