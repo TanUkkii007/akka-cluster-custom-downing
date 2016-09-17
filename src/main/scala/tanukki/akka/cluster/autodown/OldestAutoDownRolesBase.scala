@@ -6,7 +6,7 @@ import akka.cluster.{MemberStatus, Member}
 import scala.concurrent.duration.FiniteDuration
 
 abstract class OldestAutoDownRolesBase(oldestMemberRole: Option[String], targetRoles: Set[String], autoDownUnreachableAfter: FiniteDuration)
-  extends CustomAutoDownBase(autoDownUnreachableAfter){
+  extends OldestAwareCustomAutoDownBase(autoDownUnreachableAfter){
 
   override def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {
     if (isOldestOf(oldestMemberRole))

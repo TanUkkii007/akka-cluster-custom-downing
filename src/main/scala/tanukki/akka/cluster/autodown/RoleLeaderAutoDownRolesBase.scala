@@ -5,7 +5,7 @@ import akka.cluster.Member
 import scala.concurrent.duration.FiniteDuration
 
 abstract class RoleLeaderAutoDownRolesBase(leaderRole: String, targetRoles: Set[String], autoDownUnreachableAfter: FiniteDuration)
-  extends CustomAutoDownBase(autoDownUnreachableAfter){
+  extends RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter){
 
 
   override def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {
