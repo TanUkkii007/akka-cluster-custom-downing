@@ -54,7 +54,7 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
   def autoDownActorOf(address: Address, autoDownUnreachableAfter: FiniteDuration): ActorRef =
     system.actorOf(Props(classOf[OldestAutoDownRolesTestActor], address, testRole, autoDownUnreachableAfter, testActor))
 
-  "LeaderAutoDownRoles" must {
+  "OldestAutoDownRoles" must {
 
     "down unreachable when oldest" in {
       val a = autoDownActor(Duration.Zero)
