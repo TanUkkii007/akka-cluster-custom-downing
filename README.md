@@ -73,7 +73,7 @@ custom-downing {
 
 `OldestAutoDowningRoles` automatically downs nodes with specified roles.
 A node responsible to down is the oldest member of a specified role.
-If `oldest-member-role` is not specified, the oldest member among all cluster members fulfill its duty.
+If `oldest-member-role` is not specified, the oldest member among all cluster members fulfills its duty.
 
 You can enable this strategy with following configuration.
 
@@ -95,5 +95,28 @@ It is because the oldest member is uniquely determined by all members even if go
 while different leader might be viewed by members under gossip unconvergence.
 
 Downside of the oldest based downing strategy is lost of downing function when the oldest member itself fails.
+
+### QuorumLeaderAutoDowning
+
+`QuorumLeaderAutoDowning` automatically downs unreachable nodes after specified duration if the number of remaining members are larger than configured `quorum size`.  
+This strategy is same as [static quorum](http://doc.akka.io/docs/akka/rp-15v09p02/scala/split-brain-resolver.html#Static_Quorum) strategy of Split Brain Resolver from Typesafe reactive platform.
+If `down-if-out-of-quorum` is set to be true, remaining members which number is under quorum size will down themselves.
+If `role` is specified, the number of remaining members in the role is used to be compared with quorum size.
+
+```scala
+
+akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.QuorumLeaderAutoDowning"
+
+akka.cluster.auto-down-unreachable-after = 20s
+
+custom-downing {
+  quorum-leader-auto-downing {
+    role = ""
+    quorum-size = 0
+    down-if-out-of-quorum = true
+  }
+}
+
+```
 
 ## Example
