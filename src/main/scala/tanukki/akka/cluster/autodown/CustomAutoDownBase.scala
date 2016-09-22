@@ -36,6 +36,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   private var scheduledUnreachable: Map[Member, Cancellable] = Map.empty
   private var pendingUnreachable: Set[Member] = Set.empty
+  private var unstableUnreachable: Set[Member] = Set.empty
 
   override def postStop(): Unit = {
     scheduledUnreachable.values foreach { _.cancel }
@@ -54,7 +55,13 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     case UnreachableTimeout(member) =>
       if (scheduledUnreachable contains member) {
         scheduledUnreachable -= member
-        downOrAddPending(member)
+        if (scheduledUnreachable.isEmpty) {
+          unstableUnreachable += member
+          unstableUnreachable.foreach(downOrAddPending)
+          unstableUnreachable = Set.empty
+        } else {
+          unstableUnreachable += member
+        }
       }
 
     case _: ClusterDomainEvent =>
@@ -79,6 +86,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     scheduledUnreachable.get(member) foreach { _.cancel }
     scheduledUnreachable -= member
     pendingUnreachable -= member
+    unstableUnreachable -= member
   }
 
   def scheduledUnreachableMembers: Map[Member, Cancellable] = scheduledUnreachable
@@ -91,4 +99,6 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
     pendingUnreachable.foreach(member => down(member.address))
     pendingUnreachable = Set.empty
   }
+
+  def unstableUnreachableMembers: Set[Member] = unstableUnreachable
 }
