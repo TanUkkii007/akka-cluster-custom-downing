@@ -71,7 +71,7 @@ custom-downing {
 
 ### OldestAutoDowningRoles
 
-`OldestAutoDowningRoles` automatically downs nodes with specified roles.
+`OldestAutoDowningRoles` automatically downs unreachable members.
 A node responsible to down is the oldest member of a specified role.
 If `oldest-member-role` is not specified, the oldest member among all cluster members fulfills its duty.
 
@@ -85,7 +85,7 @@ akka.cluster.auto-down-unreachable-after = 20s
 custom-downing {
   oldest-auto-downing-roles {
     oldest-member-role = ""
-    target-roles = []
+    down-if-alone = true
   }
 }
 ```
@@ -94,7 +94,8 @@ Unlike leader based downing strategy, the oldest based downing strategy is much 
 It is because the oldest member is uniquely determined by all members even if gossip is not converged, 
 while different leader might be viewed by members under gossip unconvergence.
 
-Downside of the oldest based downing strategy is lost of downing function when the oldest member itself fails.
+Downside of the oldest based downing strategy is loss of downing functionality when the oldest member itself fails.
+If `down-if-alone` is set to be true, such scenario can be avoided because the secondary oldest member will down the oldest member if the oldest member get unreachable alone.
 
 ### QuorumLeaderAutoDowning
 

@@ -30,10 +30,9 @@ object OldestAutoDownRolesSpec {
   val initialMembersByAge = immutable.SortedSet(memberA, memberB, memberC, memberD)(Member.ageOrdering)
 
   class OldestAutoDownRolesTestActor(address: Address,
-                                     targetRoles:              Set[String],
                                      autoDownUnreachableAfter: FiniteDuration,
                                      probe:                    ActorRef)
-    extends OldestAutoDownRolesBase(None, targetRoles, true, autoDownUnreachableAfter) {
+    extends OldestAutoDownRolesBase(testRoleOpt, true, autoDownUnreachableAfter) {
 
     override def selfAddress = address
     override def scheduler: Scheduler = context.system.scheduler
@@ -54,10 +53,10 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
   import OldestAutoDownRolesSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new OldestAutoDownRolesTestActor(initialMembersByAge.head.address, testRole, autoDownUnreachableAfter, testActor)))
+    system.actorOf(Props(new OldestAutoDownRolesTestActor(initialMembersByAge.head.address, autoDownUnreachableAfter, testActor)))
 
   def autoDownActorOf(address: Address, autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(classOf[OldestAutoDownRolesTestActor], address, testRole, autoDownUnreachableAfter, testActor))
+    system.actorOf(Props(new OldestAutoDownRolesTestActor(address, autoDownUnreachableAfter, testActor)))
 
   "OldestAutoDownRoles" must {
 
@@ -184,13 +183,6 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
     }
 
     /*-------------------------------------------------------------------*/
-
-    "not down unreachable with different role" in {
-      val a = autoDownActor(Duration.Zero)
-      a ! CurrentClusterState(members = initialMembersByAge)
-      a ! UnreachableMember(memberD)
-      expectNoMsg(1.second)
-    }
 
     "down self when oldest itself alone is unreachable" in {
       val oldest = initialMembersByAge.head
