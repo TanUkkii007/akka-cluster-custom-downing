@@ -16,8 +16,11 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration._
 import scala.collection.immutable
 
+case class DownCalledBySecondaryOldest(address: Address)
+
 object OldestAutoDownRolesSpec {
   val testRole = Set("testRole")
+  val testRoleOpt = Some("testRole")
 
   val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRole)
   val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRole)
@@ -30,14 +33,16 @@ object OldestAutoDownRolesSpec {
                                      targetRoles:              Set[String],
                                      autoDownUnreachableAfter: FiniteDuration,
                                      probe:                    ActorRef)
-    extends OldestAutoDownRolesBase(None, targetRoles, autoDownUnreachableAfter) {
+    extends OldestAutoDownRolesBase(None, targetRoles, true, autoDownUnreachableAfter) {
 
     override def selfAddress = address
     override def scheduler: Scheduler = context.system.scheduler
 
     override def down(node: Address): Unit = {
-      if (isOldestOf(None))
+      if (isOldestOf(testRoleOpt))
         probe ! DownCalled(node)
+      else if (isSecondaryOldest(testRoleOpt))
+        probe ! DownCalledBySecondaryOldest(node)
       else
         probe ! "down must only be done by oldest member"
     }
@@ -184,6 +189,32 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
       val a = autoDownActor(Duration.Zero)
       a ! CurrentClusterState(members = initialMembersByAge)
       a ! UnreachableMember(memberD)
+      expectNoMsg(1.second)
+    }
+
+    "down self when oldest itself alone is unreachable" in {
+      val oldest = initialMembersByAge.head
+      val a = autoDownActor(0.5 second)
+      a ! CurrentClusterState(members = initialMembersByAge)
+      a ! UnreachableMember(oldest)
+      expectMsg(DownCalled(oldest.address))
+    }
+
+    "down oldest when oldest alone is unreachable" in {
+      val oldest = initialMembersByAge.head
+      val second = initialMembersByAge.drop(1).head
+      val a = autoDownActorOf(second.address, 0.5 second)
+      a ! CurrentClusterState(members = initialMembersByAge)
+      a ! UnreachableMember(oldest)
+      expectMsg(DownCalledBySecondaryOldest(oldest.address))
+    }
+
+    "NOT down oldest when younger than second member even if oldest alone is unreachable" in {
+      val oldest = initialMembersByAge.head
+      val third = initialMembersByAge.drop(2).head
+      val a = autoDownActorOf(third.address, 0.5 second)
+      a ! CurrentClusterState(members = initialMembersByAge)
+      a ! UnreachableMember(oldest)
       expectNoMsg(1.second)
     }
   }

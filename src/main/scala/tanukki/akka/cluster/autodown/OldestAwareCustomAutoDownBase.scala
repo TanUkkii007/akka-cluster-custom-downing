@@ -3,6 +3,7 @@ package tanukki.akka.cluster.autodown
 import akka.cluster.ClusterEvent._
 import akka.cluster.{MemberStatus, Member}
 import scala.collection.immutable
+import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
@@ -56,8 +57,7 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   }
 
   def isOldestUnsafe(role: Option[String]): Boolean = {
-    val targetMember = role.fold(membersByAge)(r => membersByAge.filter(_.hasRole(r)))
-    targetMember.headOption.map(_.address).contains(selfAddress)
+    targetMembers(role).headOption.map(_.address).contains(selfAddress)
   }
 
   def isOldest: Boolean = {
@@ -67,4 +67,39 @@ abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDur
   def isOldestOf(role: Option[String]): Boolean = {
     isAllIntermediateMemberRemoved && isOldestUnsafe(role)
   }
+
+  def isOldestAlone(role: Option[String]): Boolean = {
+    val tm = targetMembers(role)
+    if (tm.isEmpty || tm.size == 1) true
+    else {
+      val oldest = tm.head
+      val rest = tm.tail
+      if (isOldestUnsafe(role)) {
+        isOK(oldest) && rest.forall(isKO)
+      } else {
+        isKO(oldest) && rest.forall(isOK)
+      }
+    }
+  }
+
+  def isSecondaryOldest(role: Option[String]) = {
+    val tm = targetMembers(role)
+    if (tm.size >= 2) {
+      tm.slice(1, 2).head.address == selfAddress
+    }
+    else false
+  }
+
+  def oldestMember(role: Option[String]): Option[Member] = targetMembers(role).headOption
+
+  private def targetMembers(role: Option[String]): SortedSet[Member] = {
+    role.fold(membersByAge)(r => membersByAge.filter(_.hasRole(r)))
+  }
+
+  private def isOK(member: Member) = {
+    (member.status == MemberStatus.Up || member.status == MemberStatus.Leaving) &&
+    (!pendingUnreachableMembers.contains(member) && !unstableUnreachableMembers.contains(member))
+  }
+
+  private def isKO(member: Member): Boolean = !isOK(member)
 }
