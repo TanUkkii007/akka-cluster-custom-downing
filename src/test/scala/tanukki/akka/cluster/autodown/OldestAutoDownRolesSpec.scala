@@ -29,10 +29,10 @@ object OldestAutoDownRolesSpec {
 
   val initialMembersByAge = immutable.SortedSet(memberA, memberB, memberC, memberD)(Member.ageOrdering)
 
-  class OldestAutoDownRolesTestActor(address: Address,
-                                     autoDownUnreachableAfter: FiniteDuration,
-                                     probe:                    ActorRef)
-    extends OldestAutoDownRolesBase(testRoleOpt, true, autoDownUnreachableAfter) {
+  class OldestAutoDownTestActor(address: Address,
+                                autoDownUnreachableAfter: FiniteDuration,
+                                probe:                    ActorRef)
+    extends OldestAutoDownBase(testRoleOpt, true, autoDownUnreachableAfter) {
 
     override def selfAddress = address
     override def scheduler: Scheduler = context.system.scheduler
@@ -53,10 +53,10 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
   import OldestAutoDownRolesSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new OldestAutoDownRolesTestActor(initialMembersByAge.head.address, autoDownUnreachableAfter, testActor)))
+    system.actorOf(Props(new OldestAutoDownTestActor(initialMembersByAge.head.address, autoDownUnreachableAfter, testActor)))
 
   def autoDownActorOf(address: Address, autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(new OldestAutoDownRolesTestActor(address, autoDownUnreachableAfter, testActor)))
+    system.actorOf(Props(new OldestAutoDownTestActor(address, autoDownUnreachableAfter, testActor)))
 
   "OldestAutoDownRoles" must {
 

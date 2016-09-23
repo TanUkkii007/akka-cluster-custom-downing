@@ -69,16 +69,16 @@ custom-downing {
 }
 ```
 
-### OldestAutoDowningRoles
+### OldestAutoDowning
 
-`OldestAutoDowningRoles` automatically downs unreachable members.
+`OldestAutoDowning` automatically downs unreachable members.
 A node responsible to down is the oldest member of a specified role.
 If `oldest-member-role` is not specified, the oldest member among all cluster members fulfills its duty.
 
 You can enable this strategy with following configuration.
 
 ```
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowningRoles"
+akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowning"
 
 akka.cluster.auto-down-unreachable-after = 20s
 

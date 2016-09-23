@@ -6,7 +6,7 @@ import akka.cluster.{Cluster, DowningProvider}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.collection.JavaConverters._
 
-class OldestAutoDowningRoles(system: ActorSystem) extends DowningProvider {
+class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
   private def clusterSettings = Cluster(system).settings
 
   override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
@@ -20,20 +20,20 @@ class OldestAutoDowningRoles(system: ActorSystem) extends DowningProvider {
     clusterSettings.AutoDownUnreachableAfter match {
       case d: FiniteDuration =>
         if (d == Duration.Zero && downIfAlone) throw new ConfigurationException("If you set down-if-alone=true, autodown timeout must be greater than zero.")
-        Some(OldestAutoDownRoles.props(oldestMemberRole, downIfAlone, d))
+        Some(OldestAutoDown.props(oldestMemberRole, downIfAlone, d))
       case _ =>
         throw new ConfigurationException("OldestAutoDowningRoles downing provider selected but 'akka.cluster.auto-down-unreachable-after' not set")
     }
   }
 }
 
-private[autodown] object OldestAutoDownRoles {
+private[autodown] object OldestAutoDown {
   def props(oldestMemberRole: Option[String], downIfAlone: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
-    Props(classOf[OldestAutoDownRoles], oldestMemberRole, downIfAlone, autoDownUnreachableAfter)
+    Props(classOf[OldestAutoDown], oldestMemberRole, downIfAlone, autoDownUnreachableAfter)
 }
 
-private[autodown] class OldestAutoDownRoles(oldestMemberRole: Option[String], downIfAlone: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends OldestAutoDownRolesBase(oldestMemberRole, downIfAlone, autoDownUnreachableAfter) with ClusterCustomDowning {
+private[autodown] class OldestAutoDown(oldestMemberRole: Option[String], downIfAlone: Boolean, autoDownUnreachableAfter: FiniteDuration)
+  extends OldestAutoDownBase(oldestMemberRole, downIfAlone, autoDownUnreachableAfter) with ClusterCustomDowning {
 
   override def down(node: Address): Unit = {
     log.info("Oldest is auto-downing unreachable node [{}]", node)
