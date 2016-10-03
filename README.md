@@ -99,7 +99,7 @@ If `down-if-alone` is set to be true, such scenario can be avoided because the s
 
 ### QuorumLeaderAutoDowning
 
-`QuorumLeaderAutoDowning` automatically downs unreachable nodes after specified duration if the number of remaining members are larger than configured `quorum size`.  
+`QuorumLeaderAutoDowning` automatically downs unreachable nodes after specified duration if the number of remaining members are larger than or equal to configured `quorum size`.
 This strategy is same as [static quorum](http://doc.akka.io/docs/akka/rp-15v09p02/scala/split-brain-resolver.html#Static_Quorum) strategy of Split Brain Resolver from Typesafe reactive platform.
 If `down-if-out-of-quorum` is set to be true, remaining members which number is under quorum size will down themselves.
 If `role` is specified, the number of remaining members in the role is used to be compared with quorum size.

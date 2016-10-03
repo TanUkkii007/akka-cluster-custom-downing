@@ -18,7 +18,7 @@ final case class MultiNodeQuorumLeaderAutoDownSpecConfig(failureDetectorPuppet: 
       |custom-downing {
       |  quorum-leader-auto-downing {
       |    role = "role"
-      |    quorum-size = 5
+      |    quorum-size = 3
       |    down-if-out-of-quorum = true
       |  }
       |}

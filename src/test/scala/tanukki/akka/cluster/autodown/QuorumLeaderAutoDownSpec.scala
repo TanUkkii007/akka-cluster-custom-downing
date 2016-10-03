@@ -32,7 +32,7 @@ object QuorumLeaderAutoDownSpec {
                                       quorumRole: Option[String],
                                      autoDownUnreachableAfter: FiniteDuration,
                                      probe:                    ActorRef)
-    extends QuorumLeaderAutoDownBase(quorumRole, 5, true, autoDownUnreachableAfter) {
+    extends QuorumLeaderAutoDownBase(quorumRole, 3, true, autoDownUnreachableAfter) {
 
     override def selfAddress = address
     override def scheduler: Scheduler = context.system.scheduler

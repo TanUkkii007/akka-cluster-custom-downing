@@ -83,12 +83,12 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   def isQuorumMet(role: Option[String]) = {
     val ms = quorumMemberOf(role)
-    ms.size >= (quorumSize / 2 + 1)
+    ms.size >= quorumSize
   }
 
   def isQuorumMetAfterDown(role: Option[String]) = {
     val ms = quorumMemberOf(role)
-    ms.size - 1 >= (quorumSize / 2 + 1)
+    ms.size - 1 >= quorumSize
   }
 
   def isUnreachableStable: Boolean = scheduledUnreachableMembers.isEmpty
