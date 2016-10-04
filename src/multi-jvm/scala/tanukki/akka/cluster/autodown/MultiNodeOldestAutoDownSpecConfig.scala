@@ -14,7 +14,7 @@ final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolea
 
   commonConfig(ConfigFactory.parseString(
     """
-      |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowningRoles"
+      |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowning"
       |custom-downing {
       |  oldest-auto-downing-roles {
       |    oldest-member-role = ""
