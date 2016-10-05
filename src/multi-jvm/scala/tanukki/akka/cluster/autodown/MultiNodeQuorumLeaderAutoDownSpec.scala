@@ -108,7 +108,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
 
         awaitAssert(
           clusterView.isTerminated should be(true),
-          60 seconds,
+          10 seconds,
           1 second
         )
       }
@@ -118,7 +118,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
 
         awaitAssert(
           clusterView.isTerminated should be(true),
-          60 seconds,
+          10 seconds,
           1 second
         )
       }

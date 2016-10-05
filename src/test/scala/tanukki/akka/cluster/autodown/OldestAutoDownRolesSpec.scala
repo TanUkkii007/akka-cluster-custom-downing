@@ -11,12 +11,14 @@ package tanukki.akka.cluster.autodown
 import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
-import akka.cluster.{Member, TestMember}
+import akka.cluster.{MemberStatus, Member, TestMember}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration._
 import scala.collection.immutable
 
 case class DownCalledBySecondaryOldest(address: Address)
+
+case object ShutDownCausedBySplitBrainResolver
 
 object OldestAutoDownRolesSpec {
   val testRole = Set("testRole")
@@ -46,6 +48,9 @@ object OldestAutoDownRolesSpec {
         probe ! "down must only be done by oldest member"
     }
 
+    override def shutdownSelf(): Unit = {
+      probe ! ShutDownCausedBySplitBrainResolver
+    }
   }
 }
 

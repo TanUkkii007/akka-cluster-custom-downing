@@ -45,10 +45,13 @@ object QuorumLeaderAutoDownSpec {
           probe ! "down must only be done by quorum leader"
         }
       } else {
-        probe ! DownCalled(selfAddress)
+        shutdownSelf()
       }
     }
 
+    override def shutdownSelf(): Unit = {
+      probe ! ShutDownCausedBySplitBrainResolver
+    }
   }
 }
 
@@ -159,7 +162,7 @@ class QuorumLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRoles
       a ! MemberRemoved(memberB.copy(Removed), Down)
       a ! MemberRemoved(memberC.copy(Removed), Down)
       a ! MemberRemoved(memberD.copy(Removed), Down)
-      expectMsg(DownCalled(memberA.address))
+      expectMsg(ShutDownCausedBySplitBrainResolver)
     }
 
     "down unreachable when quorum kept even if members are unreachable" in {
@@ -181,7 +184,7 @@ class QuorumLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRoles
       a ! UnreachableMember(memberD)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       // ToDo: Should implement stable-after logic
-      expectMsgAllOf(DownCalled(memberB.address), DownCalled(memberC.address), DownCalled(memberA.address))
+      expectMsgAllOf(DownCalled(memberB.address), DownCalled(memberC.address), ShutDownCausedBySplitBrainResolver)
     }
 
   }

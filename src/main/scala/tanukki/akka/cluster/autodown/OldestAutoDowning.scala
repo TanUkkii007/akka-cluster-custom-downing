@@ -3,8 +3,8 @@ package tanukki.akka.cluster.autodown
 import akka.ConfigurationException
 import akka.actor.{Address, Props, ActorSystem}
 import akka.cluster.{Cluster, DowningProvider}
-import scala.concurrent.duration.{Duration, FiniteDuration}
-import scala.collection.JavaConverters._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
   private def clusterSettings = Cluster(system).settings
@@ -38,5 +38,9 @@ private[autodown] class OldestAutoDown(oldestMemberRole: Option[String], downIfA
   override def down(node: Address): Unit = {
     log.info("Oldest is auto-downing unreachable node [{}]", node)
     cluster.down(node)
+  }
+
+  override def shutdownSelf(): Unit = {
+    Await.result(context.system.terminate(), 10 seconds)
   }
 }

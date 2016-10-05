@@ -20,6 +20,7 @@ final case class MultiNodeQuorumLeaderAutoDownSpecConfig(failureDetectorPuppet: 
       |    role = "role"
       |    quorum-size = 3
       |    down-if-out-of-quorum = true
+      |    shutdown-actor-system-on-resolution = false
       |  }
       |}
       |akka.cluster.auto-down-unreachable-after = 1s

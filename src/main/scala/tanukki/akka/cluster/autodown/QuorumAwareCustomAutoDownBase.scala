@@ -8,7 +8,7 @@ import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachableAfter: FiniteDuration)
-  extends CustomAutoDownBase(autoDownUnreachableAfter) {
+  extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
 
   private var leader = false
   private var roleLeader: Map[String, Boolean] = Map.empty

@@ -7,7 +7,7 @@ import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
 abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
-  extends CustomAutoDownBase(autoDownUnreachableAfter) {
+  extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
 
   private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
 

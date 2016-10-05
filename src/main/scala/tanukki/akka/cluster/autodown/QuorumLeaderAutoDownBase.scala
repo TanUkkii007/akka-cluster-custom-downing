@@ -40,7 +40,7 @@ abstract class QuorumLeaderAutoDownBase(quorumRole: Option[String], quorumSize: 
         pendingAsUnreachable(member)
       }
     } else if (downIfOutOfQuorum) {
-      down(selfAddress)
+      shutdownSelf()
     }
   }
 
