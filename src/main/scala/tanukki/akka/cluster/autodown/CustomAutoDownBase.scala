@@ -28,6 +28,8 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   def downOrAddPending(member: Member): Unit
 
+  def downOrAddPendingAll(members: Set[Member])
+
   def scheduler: Scheduler
 
   import context.dispatcher
@@ -57,7 +59,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
         scheduledUnreachable -= member
         if (scheduledUnreachable.isEmpty) {
           unstableUnreachable += member
-          unstableUnreachable.foreach(downOrAddPending)
+          downOrAddPendingAll(unstableUnreachable)
           unstableUnreachable = Set.empty
         } else {
           unstableUnreachable += member

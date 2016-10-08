@@ -26,6 +26,22 @@ abstract class OldestAutoDownBase(oldestMemberRole: Option[String], downIfAlone:
     }
   }
 
+
+  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+    val oldest = oldestMember(oldestMemberRole)
+    if (downIfAlone) {
+      if (isOldestAlone(oldestMemberRole)) {
+        // ToDo: down-if-alone should be implemented here
+      }
+    } else {
+      if (oldest.fold(true)(o => members.contains(o))) {
+        shutdownSelf()
+      } else {
+        members.foreach(downOrAddPending)
+      }
+    }
+  }
+
   def downAloneOldest(member: Member): Unit = {
     val oldest = oldestMember(oldestMemberRole)
     if (isOldestOf(oldestMemberRole)) {

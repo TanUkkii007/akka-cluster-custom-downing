@@ -32,16 +32,19 @@ abstract class QuorumLeaderAutoDownBase(quorumRole: Option[String], quorumSize: 
   }
 
   override def downOrAddPending(member: Member): Unit = {
-    if (isQuorumMetAfterDown(quorumRole)) {
-      if (isLeaderOf(quorumRole)) {
-        down(member.address)
-        replaceMember(member.copy(Down))
-      } else {
-        pendingAsUnreachable(member)
-      }
+    if (isLeaderOf(quorumRole)) {
+      down(member.address)
+      replaceMember(member.copy(Down))
+    } else {
+      pendingAsUnreachable(member)
+    }
+  }
+
+  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+    if (isQuorumMetAfterDown(members, quorumRole)) {
+      members.foreach(downOrAddPending)
     } else if (downIfOutOfQuorum) {
       shutdownSelf()
     }
   }
-
 }

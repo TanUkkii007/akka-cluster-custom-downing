@@ -21,4 +21,8 @@ abstract class RoleLeaderAutoDownRolesBase(leaderRole: String, targetRoles: Set[
       }
     }
   }
+
+  override def downOrAddPendingAll(members: Set[Member]): Unit = {
+    members.foreach(downOrAddPending)
+  }
 }

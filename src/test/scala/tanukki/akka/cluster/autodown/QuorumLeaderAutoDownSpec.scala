@@ -183,8 +183,7 @@ class QuorumLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRoles
       Thread.sleep(500)
       a ! UnreachableMember(memberD)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
-      // ToDo: Should implement stable-after logic
-      expectMsgAllOf(DownCalled(memberB.address), DownCalled(memberC.address), ShutDownCausedBySplitBrainResolver)
+      expectMsgAllOf(ShutDownCausedBySplitBrainResolver)
     }
 
   }
