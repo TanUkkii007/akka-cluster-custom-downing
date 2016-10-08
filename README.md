@@ -83,7 +83,7 @@ akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoD
 akka.cluster.auto-down-unreachable-after = 20s
 
 custom-downing {
-  oldest-auto-downing-roles {
+  oldest-auto-downing {
     oldest-member-role = ""
     down-if-alone = true
   }

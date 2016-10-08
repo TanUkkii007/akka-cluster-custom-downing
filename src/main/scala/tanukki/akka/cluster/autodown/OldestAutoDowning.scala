@@ -13,11 +13,11 @@ class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
 
   override def downingActorProps: Option[Props] = {
     val oldestMemberRole = {
-      val r = system.settings.config.getString("custom-downing.oldest-auto-downing-roles.oldest-member-role")
+      val r = system.settings.config.getString("custom-downing.oldest-auto-downing.oldest-member-role")
       if (r.isEmpty) None else Some(r)
     }
-    val downIfAlone = system.settings.config.getBoolean("custom-downing.oldest-auto-downing-roles.down-if-alone")
-    val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.oldest-auto-downing-roles.shutdown-actor-system-on-resolution")
+    val downIfAlone = system.settings.config.getBoolean("custom-downing.oldest-auto-downing.down-if-alone")
+    val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.oldest-auto-downing.shutdown-actor-system-on-resolution")
     clusterSettings.AutoDownUnreachableAfter match {
       case d: FiniteDuration =>
         if (d == Duration.Zero && downIfAlone) throw new ConfigurationException("If you set down-if-alone=true, autodown timeout must be greater than zero.")
