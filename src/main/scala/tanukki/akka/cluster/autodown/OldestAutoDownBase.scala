@@ -14,24 +14,30 @@ abstract class OldestAutoDownBase(oldestMemberRole: Option[String], downIfAlone:
   }
 
   override def downOrAddPending(member: Member): Unit = {
-    if (downIfAlone && isOldestAlone(oldestMemberRole)) {
-      downAloneOldest(member)
-    } else if (isOldestOf(oldestMemberRole)) {
+    if (isOldestOf(oldestMemberRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
-    } else if (oldestMember(oldestMemberRole).contains(member)) {
-      shutdownSelf()
     } else {
       pendingAsUnreachable(member)
     }
   }
 
+  def downOnSecondary(member: Member): Unit = {
+    if (isSecondaryOldest(oldestMemberRole)) {
+      down(member.address)
+      replaceMember(member.copy(Down))
+    }
+  }
 
   override def downOrAddPendingAll(members: Set[Member]): Unit = {
     val oldest = oldestMember(oldestMemberRole)
-    if (downIfAlone) {
-      if (isOldestAlone(oldestMemberRole)) {
-        // ToDo: down-if-alone should be implemented here
+    if (downIfAlone && isOldestAlone(oldestMemberRole)) {
+      if (isOldestOf(oldestMemberRole)) {
+        shutdownSelf()
+      } else if (isSecondaryOldest(oldestMemberRole)) {
+        members.foreach(downOnSecondary)
+      } else {
+        members.foreach(downOrAddPending)
       }
     } else {
       if (oldest.fold(true)(o => members.contains(o))) {

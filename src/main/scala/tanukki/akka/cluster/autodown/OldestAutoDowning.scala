@@ -16,9 +16,7 @@ class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
       val r = system.settings.config.getString("custom-downing.oldest-auto-downing-roles.oldest-member-role")
       if (r.isEmpty) None else Some(r)
     }
-    // Not supported yet.
-    //val downIfAlone = system.settings.config.getBoolean("custom-downing.oldest-auto-downing-roles.down-if-alone")
-    val downIfAlone = false
+    val downIfAlone = system.settings.config.getBoolean("custom-downing.oldest-auto-downing-roles.down-if-alone")
     val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.oldest-auto-downing-roles.shutdown-actor-system-on-resolution")
     clusterSettings.AutoDownUnreachableAfter match {
       case d: FiniteDuration =>

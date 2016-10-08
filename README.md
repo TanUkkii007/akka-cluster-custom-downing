@@ -85,6 +85,7 @@ akka.cluster.auto-down-unreachable-after = 20s
 custom-downing {
   oldest-auto-downing-roles {
     oldest-member-role = ""
+    down-if-alone = true
   }
 }
 ```
@@ -93,10 +94,8 @@ Unlike leader based downing strategy, the oldest based downing strategy is much 
 It is because the oldest member is uniquely determined by all members even if gossip is not converged, 
 while different leader might be viewed by members under gossip unconvergence.
 
-<!-- Not supported yet.
 Downside of the oldest based downing strategy is loss of downing functionality when the oldest member itself fails.
 If `down-if-alone` is set to be true, such scenario can be avoided because the secondary oldest member will down the oldest member if the oldest member get unreachable alone.
--->
 
 ### QuorumLeaderAutoDowning
 

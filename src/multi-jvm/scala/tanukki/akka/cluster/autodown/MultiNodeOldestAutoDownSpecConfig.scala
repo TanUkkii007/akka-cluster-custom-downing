@@ -18,6 +18,7 @@ final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolea
       |custom-downing {
       |  oldest-auto-downing-roles {
       |    oldest-member-role = ""
+      |    down-if-alone = true
       |    shutdown-actor-system-on-resolution = false
       |  }
       |}

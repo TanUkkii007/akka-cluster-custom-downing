@@ -101,7 +101,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
       enterBarrier("await-completion-2")
     }
 
-    "DOWN oldest when oldest alone is unreachable" taggedAs LongRunningTest ignore {
+    "DOWN oldest when oldest alone is unreachable" taggedAs LongRunningTest in {
       val second = membersByAge.slice(1, 2).head
       val secondRole = roleByMember(second)
       val third = membersByAge.slice(2, 3).head
@@ -109,32 +109,35 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
       val oldest = roleByMember(membersByAge.head)
 
       enterBarrier("before-down-third-node")
-      runOn(nodeA) {
-        // kill 'oldest' node
-        // ToDo: somehow TestConductor fails with java.lang.IllegalStateException: TestConductorServer was not started
-        //testConductor.exit(oldest, 0).await
-        enterBarrier("down-oldest-node")
 
-        // mark the node as unreachable in the failure detector
-        markNodeAsUnavailable(oldest)
+      if (failureDetectorPuppet) {
 
-        awaitMembersUp(numberOfMembers = 2, canNotBePartOfMemberRing = Set(oldest), 30 seconds)
-      }
+        runOn(secondRole) {
+          // kill 'oldest' node
+          //testConductor.exit(oldest, 0).await
+          enterBarrier("down-oldest-node")
 
-      runOn(thirdRole) {
-        enterBarrier("down-oldest-node")
+          // mark the node as unreachable in the failure detector
+          markNodeAsUnavailable(oldest)
 
-        awaitMembersUp(numberOfMembers = 2, canNotBePartOfMemberRing = Set(oldest), 30 seconds)
-      }
+          awaitMembersUp(numberOfMembers = 2, canNotBePartOfMemberRing = Set(oldest), 30 seconds)
+        }
 
-      runOn(oldest) {
-        enterBarrier("down-oldest-node")
+        runOn(thirdRole) {
+          enterBarrier("down-oldest-node")
+
+          awaitMembersUp(numberOfMembers = 2, canNotBePartOfMemberRing = Set(oldest), 30 seconds)
+        }
+
+        runOn(oldest) {
+          enterBarrier("down-oldest-node")
+        }
       }
 
       enterBarrier("await-completion-3")
     }
 
-    "DOWN whole cluster when oldest is down" taggedAs LongRunningTest in {
+    "DOWN whole cluster when oldest is down" taggedAs LongRunningTest ignore {
       val second = membersByAge.slice(1, 2).head
       val secondRole = roleByMember(second)
       val third = membersByAge.slice(2, 3).head
