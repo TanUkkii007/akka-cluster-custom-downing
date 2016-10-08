@@ -34,7 +34,7 @@ object OldestAutoDownRolesSpec {
   class OldestAutoDownTestActor(address: Address,
                                 autoDownUnreachableAfter: FiniteDuration,
                                 probe:                    ActorRef)
-    extends OldestAutoDownBase(testRoleOpt, true, autoDownUnreachableAfter) {
+    extends OldestAutoDownBase(testRoleOpt, false, autoDownUnreachableAfter) {
 
     override def selfAddress = address
     override def scheduler: Scheduler = context.system.scheduler
@@ -75,9 +75,10 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
 
     "not down unreachable when not oldest" in {
       val second = initialMembersByAge.drop(1).head
+      val third = initialMembersByAge.drop(2).head
       val a = autoDownActorOf(second.address, Duration.Zero)
       a ! CurrentClusterState(members = initialMembersByAge)
-      a ! UnreachableMember(initialMembersByAge.head)
+      a ! UnreachableMember(third)
       expectNoMsg(1.second)
     }
 
@@ -189,15 +190,40 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
 
     /*-------------------------------------------------------------------*/
 
-    "down self when oldest itself alone is unreachable" in {
+    "shutdown self when partitioned from oldest" in {
       val oldest = initialMembersByAge.head
-      val a = autoDownActor(0.5 second)
-      a ! CurrentClusterState(members = initialMembersByAge)
-      a ! UnreachableMember(oldest)
-      expectMsg(DownCalled(oldest.address))
+      val second = initialMembersByAge.drop(1).head
+      val last = initialMembersByAge.last
+      val lastActor = autoDownActorOf(last.address, 0.5 second)
+      lastActor ! CurrentClusterState(members = initialMembersByAge)
+      lastActor ! UnreachableMember(second)
+      lastActor ! UnreachableMember(oldest)
+      expectMsg(ShutDownCausedBySplitBrainResolver)
     }
 
-    "down oldest when oldest alone is unreachable" in {
+    "shutdown secondary oldest itself when partitioned from oldest when `donw-if-alone=false`" in {
+      val oldest = initialMembersByAge.head
+      val second = initialMembersByAge.drop(1).head
+      val secondaryActor = autoDownActorOf(second.address, 0.5 second)
+      secondaryActor ! CurrentClusterState(members = initialMembersByAge)
+      secondaryActor ! UnreachableMember(oldest)
+      expectMsg(ShutDownCausedBySplitBrainResolver)
+    }
+
+    "down self when oldest itself alone is unreachable if `donw-if-alone=true" ignore {
+      val oldest = initialMembersByAge.head
+      val second = initialMembersByAge.drop(1).head
+      val third = initialMembersByAge.drop(2).head
+      val last = initialMembersByAge.last
+      val oldestActor = autoDownActor(0.5 second)
+      oldestActor ! CurrentClusterState(members = initialMembersByAge)
+      oldestActor ! UnreachableMember(second)
+      oldestActor ! UnreachableMember(third)
+      oldestActor ! UnreachableMember(last)
+      expectMsg(ShutDownCausedBySplitBrainResolver)
+    }
+
+    "down oldest when oldest alone is unreachable if `donw-if-alone=true" ignore {
       val oldest = initialMembersByAge.head
       val second = initialMembersByAge.drop(1).head
       val a = autoDownActorOf(second.address, 0.5 second)
@@ -206,7 +232,7 @@ class OldestAutoDownRolesSpec extends AkkaSpec(ActorSystem("OldestAutoDownRolesS
       expectMsg(DownCalledBySecondaryOldest(oldest.address))
     }
 
-    "NOT down oldest when younger than second member even if oldest alone is unreachable" in {
+    "NOT down oldest when younger than second member even if oldest alone is unreachable with `donw-if-alone=true" ignore {
       val oldest = initialMembersByAge.head
       val third = initialMembersByAge.drop(2).head
       val a = autoDownActorOf(third.address, 0.5 second)

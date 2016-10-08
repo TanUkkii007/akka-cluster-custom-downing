@@ -15,11 +15,11 @@ class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNod
 class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode4 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
 class OldestAutoDowningNodeThatIsUnreachableWithFailureDetectorPuppetMultiJvmNode5 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = true))
 
-//class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-//class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-//class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-//class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
-//class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode5 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode1 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode2 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode3 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode4 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
+class OldestAutoDowningNodeThatIsUnreachableWithAccrualFailureDetectorMultiJvmNode5 extends MultiNodeOldestAutoDownSpec(MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet = false))
 
 abstract class MultiNodeOldestAutoDownSpec(multiNodeConfig: MultiNodeOldestAutoDownSpecConfig) extends MultiNodeSpec(multiNodeConfig)
 with STMultiNodeSpec with MultiNodeClusterSpec {
@@ -43,7 +43,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
       val oldest = roleByMember(membersByAge.head)
 
       enterBarrier("before-exit-fourth-node")
-      runOn(oldest) {
+      runOn(nodeA) {
         // kill 'fifth' node
         testConductor.exit(fifthRole, 0).await
         enterBarrier("down-fifth-node")
@@ -77,7 +77,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
       val oldest = roleByMember(membersByAge.head)
 
       enterBarrier("before-down-second-node")
-      runOn(oldest) {
+      runOn(nodeA) {
         // kill 'second' node
         testConductor.exit(secondRole, 0).await
         enterBarrier("down-second-node")
@@ -101,7 +101,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
       enterBarrier("await-completion-2")
     }
 
-    "DOWN oldest when oldest alone is unreachable" taggedAs LongRunningTest in {
+    "DOWN oldest when oldest alone is unreachable" taggedAs LongRunningTest ignore {
       val second = membersByAge.slice(1, 2).head
       val secondRole = roleByMember(second)
       val third = membersByAge.slice(2, 3).head
@@ -109,7 +109,7 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
       val oldest = roleByMember(membersByAge.head)
 
       enterBarrier("before-down-third-node")
-      runOn(secondRole) {
+      runOn(nodeA) {
         // kill 'oldest' node
         // ToDo: somehow TestConductor fails with java.lang.IllegalStateException: TestConductorServer was not started
         //testConductor.exit(oldest, 0).await
@@ -133,11 +133,58 @@ with STMultiNodeSpec with MultiNodeClusterSpec {
 
       enterBarrier("await-completion-3")
     }
+
+    "DOWN whole cluster when oldest is down" taggedAs LongRunningTest in {
+      val second = membersByAge.slice(1, 2).head
+      val secondRole = roleByMember(second)
+      val third = membersByAge.slice(2, 3).head
+      val thirdRole = roleByMember(third)
+      val oldest = roleByMember(membersByAge.head)
+
+      enterBarrier("before-down-third-node")
+
+      if (failureDetectorPuppet) {
+
+        runOn(secondRole) {
+          // kill 'oldest' node
+          //testConductor.exit(oldest, 0).await
+          enterBarrier("down-oldest-node")
+
+          // mark the node as unreachable in the failure detector
+          markNodeAsUnavailable(oldest)
+
+          awaitAssert(
+            clusterView.isTerminated should be(true),
+            10 seconds,
+            1 second
+          )
+
+        }
+
+        runOn(thirdRole) {
+          enterBarrier("down-oldest-node")
+
+          awaitAssert(
+            clusterView.isTerminated should be(true),
+            10 seconds,
+            1 second
+          )
+        }
+
+        runOn(oldest) {
+          enterBarrier("down-oldest-node")
+        }
+      }
+
+      enterBarrier("await-completion-3")
+    }
   }
 
   def membersByAge: SortedSet[Member] = immutable.SortedSet(clusterView.members.toSeq: _*)(Member.ageOrdering)
 
   def roleByMember(member: Member): RoleName = roles.find(r => address(r) == member.address).get
+
+  def isFirst(roleName: RoleName): Boolean = address(roleName) == address(nodeA)
 
 }
 

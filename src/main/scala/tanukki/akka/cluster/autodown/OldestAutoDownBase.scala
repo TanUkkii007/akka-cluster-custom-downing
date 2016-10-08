@@ -19,6 +19,8 @@ abstract class OldestAutoDownBase(oldestMemberRole: Option[String], downIfAlone:
     } else if (isOldestOf(oldestMemberRole)) {
       down(member.address)
       replaceMember(member.copy(Down))
+    } else if (oldestMember(oldestMemberRole).contains(member)) {
+      shutdownSelf()
     } else {
       pendingAsUnreachable(member)
     }
@@ -27,10 +29,7 @@ abstract class OldestAutoDownBase(oldestMemberRole: Option[String], downIfAlone:
   def downAloneOldest(member: Member): Unit = {
     val oldest = oldestMember(oldestMemberRole)
     if (isOldestOf(oldestMemberRole)) {
-      oldest.foreach { m =>
-        down(m.address)
-        replaceMember(m.copy(Down))
-      }
+      shutdownSelf()
     } else if (isSecondaryOldest(oldestMemberRole) && oldest.contains(member)) {
       oldest.foreach { m =>
         down(m.address)
