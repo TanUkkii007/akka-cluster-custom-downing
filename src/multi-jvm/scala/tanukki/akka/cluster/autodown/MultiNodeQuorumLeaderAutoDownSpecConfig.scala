@@ -16,6 +16,8 @@ final case class MultiNodeQuorumLeaderAutoDownSpecConfig(failureDetectorPuppet: 
     """
       |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.QuorumLeaderAutoDowning"
       |custom-downing {
+      |  stable-after = 1s
+      |
       |  quorum-leader-auto-downing {
       |    role = "role"
       |    quorum-size = 3
@@ -23,7 +25,6 @@ final case class MultiNodeQuorumLeaderAutoDownSpecConfig(failureDetectorPuppet: 
       |    shutdown-actor-system-on-resolution = false
       |  }
       |}
-      |akka.cluster.auto-down-unreachable-after = 1s
       |akka.cluster.metrics.enabled=off
       |akka.actor.warn-about-java-serializer-usage = off
       |akka.remote.log-remote-lifecycle-events = off

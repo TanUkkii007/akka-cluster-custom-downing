@@ -13,6 +13,7 @@ class QuorumLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
   override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
 
   override def downingActorProps: Option[Props] = {
+    val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
     val role = {
       val r = system.settings.config.getString("custom-downing.quorum-leader-auto-downing.role")
       if (r.isEmpty) None else Some(r)
@@ -20,11 +21,7 @@ class QuorumLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
     val quorumSize = system.settings.config.getInt("custom-downing.quorum-leader-auto-downing.quorum-size")
     val downIfOutOfQuorum = system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.down-if-out-of-quorum")
     val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.shutdown-actor-system-on-resolution")
-    clusterSettings.AutoDownUnreachableAfter match {
-      case d: FiniteDuration => Some(QuorumLeaderAutoDown.props(role, quorumSize, downIfOutOfQuorum, shutdownActorSystem, d))
-      case _ =>
-        throw new ConfigurationException("QuorumLeaderAutoDowning downing provider selected but 'akka.cluster.auto-down-unreachable-after' not set")
-    }
+    Some(QuorumLeaderAutoDown.props(role, quorumSize, downIfOutOfQuorum, shutdownActorSystem, stableAfter))
   }
 }
 

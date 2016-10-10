@@ -1,10 +1,10 @@
 package tanukki.akka.cluster.autodown
 
-import akka.ConfigurationException
 import akka.actor.{ActorSystem, Props, Address}
 import akka.cluster.{Cluster, DowningProvider}
 import scala.concurrent.duration.FiniteDuration
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 
 final class LeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider {
 
@@ -13,12 +13,9 @@ final class LeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider 
   override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
 
   override def downingActorProps: Option[Props] = {
+    val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
     val roles = system.settings.config.getStringList("custom-downing.leader-auto-downing-roles.target-roles").asScala.toSet
-    clusterSettings.AutoDownUnreachableAfter match {
-      case d: FiniteDuration => if (roles.isEmpty) None else Some(LeaderAutoDownRoles.props(roles, d))
-      case _ =>
-        throw new ConfigurationException("LeaderAutoDowningRoles downing provider selected but 'akka.cluster.auto-down-unreachable-after' not set")
-    }
+    if (roles.isEmpty) None else Some(LeaderAutoDownRoles.props(roles, stableAfter))
   }
 }
 

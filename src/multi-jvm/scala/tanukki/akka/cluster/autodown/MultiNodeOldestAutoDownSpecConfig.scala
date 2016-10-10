@@ -16,13 +16,14 @@ final case class MultiNodeOldestAutoDownSpecConfig(failureDetectorPuppet: Boolea
     """
       |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowning"
       |custom-downing {
+      |  stable-after = 1s
+      |
       |  oldest-auto-downing {
       |    oldest-member-role = ""
       |    down-if-alone = true
       |    shutdown-actor-system-on-resolution = false
       |  }
       |}
-      |akka.cluster.auto-down-unreachable-after = 1s
       |akka.cluster.metrics.enabled=off
       |akka.actor.warn-about-java-serializer-usage = off
       |akka.remote.log-remote-lifecycle-events = off

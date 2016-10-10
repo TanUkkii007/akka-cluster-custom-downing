@@ -12,18 +12,16 @@ class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
   override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
 
   override def downingActorProps: Option[Props] = {
+    val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
     val oldestMemberRole = {
       val r = system.settings.config.getString("custom-downing.oldest-auto-downing.oldest-member-role")
       if (r.isEmpty) None else Some(r)
     }
     val downIfAlone = system.settings.config.getBoolean("custom-downing.oldest-auto-downing.down-if-alone")
     val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.oldest-auto-downing.shutdown-actor-system-on-resolution")
-    clusterSettings.AutoDownUnreachableAfter match {
-      case d: FiniteDuration =>
-        if (d == Duration.Zero && downIfAlone) throw new ConfigurationException("If you set down-if-alone=true, autodown timeout must be greater than zero.")
-        Some(OldestAutoDown.props(oldestMemberRole, downIfAlone, shutdownActorSystem, d))
-      case _ =>
-        throw new ConfigurationException("OldestAutoDowningRoles downing provider selected but 'akka.cluster.auto-down-unreachable-after' not set")
+    if (stableAfter == Duration.Zero && downIfAlone) throw new ConfigurationException("If you set down-if-alone=true, stable-after timeout must be greater than zero.")
+    else {
+      Some(OldestAutoDown.props(oldestMemberRole, downIfAlone, shutdownActorSystem, stableAfter))
     }
   }
 }

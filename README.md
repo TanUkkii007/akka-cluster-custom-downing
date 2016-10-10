@@ -39,9 +39,9 @@ You can enable this strategy with following configuration.
 ```
 akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.LeaderAutoDowningRoles"
 
-akka.cluster.auto-down-unreachable-after = 20s
-
 custom-downing {
+  stable-after = 20s
+
   leader-auto-downing-roles {
     target-roles = [worker]
   }
@@ -59,9 +59,9 @@ You can enable this strategy with following configuration.
 ```
 akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.RoleLeaderAutoDowningRoles"
 
-akka.cluster.auto-down-unreachable-after = 20s
-
 custom-downing {
+  stable-after = 20s
+  
   role-leader-auto-downing-roles {
     leader-role = "master"
     target-roles = [worker]
@@ -80,9 +80,9 @@ You can enable this strategy with following configuration.
 ```
 akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.OldestAutoDowning"
 
-akka.cluster.auto-down-unreachable-after = 20s
-
 custom-downing {
+  stable-after = 20s
+  
   oldest-auto-downing {
     oldest-member-role = ""
     down-if-alone = true
@@ -108,9 +108,9 @@ If `role` is specified, the number of remaining members in the role is used to b
 
 akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.QuorumLeaderAutoDowning"
 
-akka.cluster.auto-down-unreachable-after = 20s
-
 custom-downing {
+  stable-after = 20s
+  
   quorum-leader-auto-downing {
     role = ""
     quorum-size = 0

@@ -15,11 +15,12 @@ final case class MultiNodeLeaderAutoDownRolesSpecConfig(failureDetectorPuppet: B
     """
       |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.LeaderAutoDowningRoles"
       |custom-downing {
+      |  stable-after = 0s
+      |
       |  leader-auto-downing-roles {
       |    target-roles = [role-A]
       |  }
       |}
-      |akka.cluster.auto-down-unreachable-after = 0s
       |akka.cluster.metrics.enabled=off
       |akka.actor.warn-about-java-serializer-usage = off
       |akka.remote.log-remote-lifecycle-events = off
