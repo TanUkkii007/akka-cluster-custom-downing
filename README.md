@@ -27,6 +27,14 @@ It lets you configure which nodes can be downed automatically and who is respons
 
 akka-cluster-custom-downing is currently under development.
 
+## Installation
+
+For sbt, add following line to build.sbt.
+
+```
+libraryDependencies += "github.com/TanUkkii007" % "akka-cluster-custom-downing_2.11" % "0.0.5"
+```
+
 ## Usage
 
 ### LeaderAutoDowningRoles
