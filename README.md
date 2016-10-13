@@ -105,6 +105,8 @@ while different leader might be viewed by members under gossip unconvergence.
 Downside of the oldest based downing strategy is loss of downing functionality when the oldest member itself fails.
 If `down-if-alone` is set to be true, such scenario can be avoided because the secondary oldest member will down the oldest member if the oldest member get unreachable alone.
 
+![OldestAutoDowning](img/keep_oldest.png)
+
 ### QuorumLeaderAutoDowning
 
 `QuorumLeaderAutoDowning` automatically downs unreachable nodes after specified duration if the number of remaining members are larger than or equal to configured `quorum size`.
@@ -127,5 +129,7 @@ custom-downing {
 }
 
 ```
+
+![QuorumLeaderAutoDowning](img/static_quorum.png)
 
 ## Example
