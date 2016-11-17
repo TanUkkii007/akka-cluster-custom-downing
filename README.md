@@ -34,7 +34,7 @@ For sbt, add following lines to build.sbt.
 ```
 resolvers += Resolver.bintrayRepo("tanukkii007", "maven")
 
-libraryDependencies += "github.com/TanUkkii007" % "akka-cluster-custom-downing_2.11" % "0.0.5"
+libraryDependencies += "com.github.TanUkkii007" % "akka-cluster-custom-downing_2.11" % "0.0.6"
 ```
 
 ## Usage
