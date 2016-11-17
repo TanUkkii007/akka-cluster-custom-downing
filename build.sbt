@@ -1,6 +1,6 @@
 name := "akka-cluster-custom-downing"
 
-organization := "github.com/TanUkkii007"
+organization := "com.github.TanUkkii007"
 
 homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
 
