@@ -4,7 +4,9 @@ organization := "com.github.TanUkkii007"
 
 homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.0"
+
+crossScalaVersions := Seq("2.11.8", "2.12.0")
 
 scalacOptions ++= Seq(
   "-feature",
@@ -18,7 +20,7 @@ scalacOptions ++= Seq(
 
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-val akkaVersion = "2.4.7"
+val akkaVersion = "2.4.14"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -26,7 +28,7 @@ libraryDependencies ++= Seq(
 //  "com.typesafe.akka" %% "akka-cluster" % akkaVersion  % "test" classifier "tests",
   "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % "test",
 //  "com.typesafe.akka" %% "akka-testkit" % akkaVersion  % "test" classifier "tests",
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
 compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test)
@@ -50,3 +52,5 @@ configs(MultiJvm)
 BintrayPlugin.autoImport.bintrayPackage := "akka-cluster-custom-downing"
 
 enablePlugins(BintrayPlugin, ReleasePlugin)
+
+releaseCrossBuild := true
