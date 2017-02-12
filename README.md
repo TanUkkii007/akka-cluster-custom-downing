@@ -11,21 +11,44 @@ The fundamental problem is that actual node down and temporary network partition
 You must realize that auto-downed node may be actually alive and 
 one of the worst consequence is that resources that must not be shared are damaged by multiple Cluster Singleton or duplicate entity sharded by Cluster Sharding.
 
-With careful consideration, however, you can use auto-down feature safely for a specific design of distributed application.
-
-If following conditions are met, nodes can be safely down automatically.
-
-1. a node will be isolated from incoming requests if the node is detached from the other cluster members
-1. a node mutates shared resources only if it receives a request
-
-How this conditions are applied is vary according to application design.
-
 akka-cluster-custom-downing provides configurable auto-downing strategy you can choose based on your distributed application design.
 It lets you configure which nodes can be downed automatically and who is responsible to execute a downing action.
+
+## Theoretical background
+
+It is noteworthy that there exists **no** perfect split brain resolving strategy. 
+According to so called "FLP impossibility result", no deterministic consensus can be made in asynchronous system even if only one process fails.
+As you know, akka cluster is asynchronous system. It means that akka cluster cannot make a consensus about their views synchronised with gossip protocol if faulty processes exist.
+
+It is always beneficial to clarify what kind of failure a distributed algorithm handles.
+Akka cluster has a failure detector and split brain resolver (and also auto-down) handles its failure.
+In this case the failure indicates the process crashes and do not differentiate crash from omission.
+Actually the failure detector cannot differentiate crash and omission. 
+In the case of omission, i.e. when the process marked as faulty by failure detector actually are alive, some algorithm go wrong.
+For example auto-down feature of akka cluster is based on leader which may diverged under omission fault so may result in split brain.
+
+Note that leader election in Akka cluster is based on asynchronously replicated state.
+A leader is the first member selected from sorted members that is not unreachable.
+Under network partition some partition may have different view of unreachable members from the others so leader will diverge.
+
+Split brain resolver including akka-cluster-custom-downing basically resolve the problem in the way that,
+1. do not depends on a leader (or leader only)
+1. force some resolved processes to crash, i.e. omission fault is same as crash fault
+1. not perfect as indicated in FLP impossibility, but occurrence of the imperfection is pretty rare
+
+My slide may help you understand these things. I am sorry it is written in japanese. Let me know if there are good document explains split brain problem.
+http://www.slideshare.net/TanUkkii/akka-cluster-66880662
 
 ## Status
 
 akka-cluster-custom-downing is currently under development.
+
+akka-cluster-custom-downing is for general purpose.
+In some case you find it is better to implement your system specific strategy by yourself.
+akka-cluster-custom-downing shows how to implement split brain resolving strategies so may be your help.
+
+Distributed systems are challenging. Actually I do not use akka cluster or akka-cluster-custom-downing in production.
+I hope to know how you use them.
 
 ## Installation
 
@@ -34,52 +57,12 @@ For sbt, add following lines to build.sbt.
 ```
 resolvers += Resolver.bintrayRepo("tanukkii007", "maven")
 
-libraryDependencies += "com.github.TanUkkii007" %% "akka-cluster-custom-downing_2.12" % "0.0.7"
+libraryDependencies += "com.github.TanUkkii007" %% "akka-cluster-custom-downing" % "0.0.7"
 ```
 
 Both Scala 2.11 and 2.12 are supported.
 
-## Usage
-
-### LeaderAutoDowningRoles
-
-`LeaderAutoDowningRoles` automatically downs nodes with specified roles.
-Like `akka.cluster.AutoDowning`, which is provided with Akka Cluster, a node responsible to down is the leader.
-
-You can enable this strategy with following configuration.
-
-```
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.LeaderAutoDowningRoles"
-
-custom-downing {
-  stable-after = 20s
-
-  leader-auto-downing-roles {
-    target-roles = [worker]
-  }
-}
-```
-
-
-### RoleLeaderAutoDowningRoles
-
-`RoleLeaderAutoDowningRoles` automatically downs nodes with specified roles.
-A node responsible to down is the role leader of a specified role.
-
-You can enable this strategy with following configuration.
-
-```
-akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.RoleLeaderAutoDowningRoles"
-
-custom-downing {
-  stable-after = 20s
-  
-  role-leader-auto-downing-roles {
-    leader-role = "master"
-    target-roles = [worker]
-  }
-}
-```
+## Usage of split brain resolving strategy
 
 ### OldestAutoDowning
 
@@ -136,4 +119,57 @@ custom-downing {
 
 ![QuorumLeaderAutoDowning](img/static_quorum.png)
 
-## Example
+
+## Usage of Leader based downing strategies
+
+It is not recommended that your auto-down strategy depends on a leader.
+
+With careful consideration, however you may use auto-down feature safely for a specific design of distributed application.
+
+If following conditions are met, nodes can be safely down automatically.
+
+1. a node will be isolated from incoming requests if the node is detached from the other cluster members
+1. a node mutates shared resources only if it receives a request
+
+How this conditions are applied is vary according to application design.
+
+
+### LeaderAutoDowningRoles
+
+`LeaderAutoDowningRoles` automatically downs nodes with specified roles.
+Like `akka.cluster.AutoDowning`, which is provided with Akka Cluster, a node responsible to down is the leader.
+
+You can enable this strategy with following configuration.
+
+```
+akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.LeaderAutoDowningRoles"
+
+custom-downing {
+  stable-after = 20s
+
+  leader-auto-downing-roles {
+    target-roles = [worker]
+  }
+}
+```
+
+
+### RoleLeaderAutoDowningRoles
+
+`RoleLeaderAutoDowningRoles` automatically downs nodes with specified roles.
+A node responsible to down is the role leader of a specified role.
+
+You can enable this strategy with following configuration.
+
+```
+akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.RoleLeaderAutoDowningRoles"
+
+custom-downing {
+  stable-after = 20s
+  
+  role-leader-auto-downing-roles {
+    leader-role = "master"
+    target-roles = [worker]
+  }
+}
+```
