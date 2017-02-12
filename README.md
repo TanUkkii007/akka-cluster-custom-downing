@@ -32,6 +32,7 @@ A leader is the first member selected from sorted members that is not unreachabl
 Under network partition some partition may have different view of unreachable members from the others so leader will diverge.
 
 Split brain resolver including akka-cluster-custom-downing basically resolve the problem in the way that,
+
 1. do not depends on a leader (or leader only)
 1. force some resolved processes to crash, i.e. omission fault is same as crash fault
 1. not perfect as indicated in FLP impossibility, but occurrence of the imperfection is pretty rare
