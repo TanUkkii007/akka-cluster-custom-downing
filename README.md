@@ -3,41 +3,40 @@
 
 ## Introduction
 
-Akka cluster has `akka.cluster.auto-down-unreachable-after` configuration property.
-It enables to down unreachable nodes automatically after specified duration.
+Akka cluster has an `akka.cluster.auto-down-unreachable-after` configuration property.
+It enables marking unreachable nodes as DOWN automatically after a specified duration.
 As [the Akka documentation](http://doc.akka.io/docs/akka/current/scala/cluster-usage.html#Automatic_vs__Manual_Downing) says, 
-using auto-down feature is dangerous because it may cause split brain and lead to multiple clusters.
-The fundamental problem is that actual node down and temporary network partition cannot be distinguished from each other.
-You must realize that auto-downed node may be actually alive and 
-one of the worst consequence is that resources that must not be shared are damaged by multiple Cluster Singleton or duplicate entity sharded by Cluster Sharding.
+using the auto-down feature is dangerous because it may cause a split-brain scenario which leads to multiple clusters.
+The fundamental problem is that an actual down node and a temporary network partition cannot be distinguished from each other.
+You must realize that an auto-downed node may be actually alive and establishing its own cluster.  One of the worst consequences is that resources that must not be shared are now accessible by multiple Cluster Singletons or duplicatively sharded by Cluster Sharding.
 
-akka-cluster-custom-downing provides configurable auto-downing strategy you can choose based on your distributed application design.
+akka-cluster-custom-downing provides a configurable auto-downing strategy that you can choose based on your distributed application design.
 It lets you configure which nodes can be downed automatically and who is responsible to execute a downing action.
 
 ## Theoretical background
 
 It is noteworthy that there exists **no** perfect split brain resolving strategy. 
-According to so called "FLP impossibility result", no deterministic consensus can be made in asynchronous system even if only one process fails.
-As you know, akka cluster is asynchronous system. It means that akka cluster cannot make a consensus about their views synchronised with gossip protocol if faulty processes exist.
+According to so called "FLP impossibility result", no deterministic consensus can be made in an asynchronous system even if only one process fails.
+As you know, akka cluster is an asynchronous system and therefore cannot make a consensus about its view synchronised with gossip protocol if faulty processes exist.
 
 It is always beneficial to clarify what kind of failure a distributed algorithm handles.
-Akka cluster has a failure detector and split brain resolver (and also auto-down) handles its failure.
-In this case the failure indicates the process crashes and do not differentiate crash from omission.
-Actually the failure detector cannot differentiate crash and omission. 
-In the case of omission, i.e. when the process marked as faulty by failure detector actually are alive, some algorithm go wrong.
-For example auto-down feature of akka cluster is based on leader which may diverged under omission fault so may result in split brain.
+Akka cluster has a failure detector and a split brain resolver (and also auto-down) handles its failure.
+In this case the failure indicates the process crashes and does not differentiate a crash from the omission of a heartbeat.
+Actually the failure detector cannot differentiate a crash and the omission of a heartbeat. 
+In the case of omission, i.e. when the process marked as faulty by the failure detector are actually alive, some algorithms go wrong.
+For example the auto-down feature of akka cluster is based on election of a leader which may diverge under an omission fault, so may result in a split-brain scenario.
 
 Note that leader election in Akka cluster is based on asynchronously replicated state.
-A leader is the first member selected from sorted members that is not unreachable.
+A leader is the first member selected from sorted members that are not unreachable.
 Under network partition some partition may have different view of unreachable members from the others so leader will diverge.
 
-Split brain resolver including akka-cluster-custom-downing basically resolve the problem in the way that,
+The Split brain resolver included in akka-cluster-custom-downing basically resolves the problem in a way that,
 
 1. do not depends on a leader (or leader only)
 1. force some resolved processes to crash, i.e. omission fault is same as crash fault
 1. not perfect as indicated in FLP impossibility, but occurrence of the imperfection is pretty rare
 
-My slide may help you understand these things. I am sorry it is written in japanese. Let me know if there are good document explains split brain problem.
+My slide may help you understand these things. I am sorry it is written in japanese. Let me know if there are better documents that explain the split brain problem.
 http://www.slideshare.net/TanUkkii/akka-cluster-66880662
 
 ## Status
