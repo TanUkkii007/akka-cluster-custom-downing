@@ -17,18 +17,19 @@ class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
       val r = system.settings.config.getString("custom-downing.majority-auto-downing.majority-member-role")
       if (r.isEmpty) None else Some(r)
     }
+    val downIfInMinority = system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.down-if-in-minority")
     val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.majority-auto-downing.shutdown-actor-system-on-resolution")
-    Some(MajorityLeaderAutoDown.props(majorityMemberRole, shutdownActorSystem, stableAfter))
+    Some(MajorityLeaderAutoDown.props(majorityMemberRole, downIfInMinority, shutdownActorSystem, stableAfter))
   }
 }
 
 private[autodown] object MajorityLeaderAutoDown {
-  def props(majorityMemberRole: Option[String], shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
+  def props(majorityMemberRole: Option[String], downIfInMinority: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
     Props(classOf[MajorityLeaderAutoDown], majorityMemberRole, shutdownActorSystem, autoDownUnreachableAfter)
 }
 
-private[autodown] class MajorityLeaderAutoDown(majorityMemberRole: Option[String], shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends MajorityLeaderAutoDownBase(majorityMemberRole, shutdownActorSystem, autoDownUnreachableAfter) with ClusterCustomDowning {
+private[autodown] class MajorityLeaderAutoDown(majorityMemberRole: Option[String], downIfInMinority: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
+  extends MajorityLeaderAutoDownBase(majorityMemberRole, downIfInMinority, autoDownUnreachableAfter) with ClusterCustomDowning {
 
   override def down(node: Address): Unit = {
     log.info("Majority is auto-downing unreachable node [{}]", node)
