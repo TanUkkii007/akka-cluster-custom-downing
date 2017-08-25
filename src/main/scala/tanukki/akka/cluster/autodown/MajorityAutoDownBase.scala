@@ -14,11 +14,18 @@ abstract class MajorityAutoDownBase(majorityMemberRole: Option[String], autoDown
       down(member.address)
       replaceMember(member.copy(Down))
     } else {
-      shutdownSelf()
+      pendingAsUnreachable(member)
     }
   }
 
   override def downOrAddPendingAll(members: Set[Member]): Unit = {
-    members.foreach(downOrAddPending)
+    if (isMajority(majorityMemberRole)) {
+      members.foreach({member =>
+        down(member.address)
+        replaceMember(member.copy(Down))
+      })
+    } else {
+      shutdownSelf()
+    }
   }
 }
