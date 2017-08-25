@@ -6,7 +6,7 @@ import akka.cluster.{Cluster, DowningProvider}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class MajorityAutoDowning(system: ActorSystem) extends DowningProvider {
+class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
   private def clusterSettings = Cluster(system).settings
 
   override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
@@ -18,17 +18,17 @@ class MajorityAutoDowning(system: ActorSystem) extends DowningProvider {
       if (r.isEmpty) None else Some(r)
     }
     val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.majority-auto-downing.shutdown-actor-system-on-resolution")
-    Some(MajorityAutoDown.props(majorityMemberRole, shutdownActorSystem, stableAfter))
+    Some(MajorityLeaderAutoDown.props(majorityMemberRole, shutdownActorSystem, stableAfter))
   }
 }
 
-private[autodown] object MajorityAutoDown {
+private[autodown] object MajorityLeaderAutoDown {
   def props(majorityMemberRole: Option[String], shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
-    Props(classOf[MajorityAutoDown], majorityMemberRole, shutdownActorSystem, autoDownUnreachableAfter)
+    Props(classOf[MajorityLeaderAutoDown], majorityMemberRole, shutdownActorSystem, autoDownUnreachableAfter)
 }
 
-private[autodown] class MajorityAutoDown(majorityMemberRole: Option[String], shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends MajorityAutoDownBase(majorityMemberRole, autoDownUnreachableAfter) with ClusterCustomDowning {
+private[autodown] class MajorityLeaderAutoDown(majorityMemberRole: Option[String], shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
+  extends MajorityLeaderAutoDownBase(majorityMemberRole, autoDownUnreachableAfter) with ClusterCustomDowning {
 
   override def down(node: Address): Unit = {
     log.info("Majority is auto-downing unreachable node [{}]", node)

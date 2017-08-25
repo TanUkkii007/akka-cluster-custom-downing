@@ -1,5 +1,6 @@
 package tanukki.akka.cluster.autodown
 
+import akka.actor.Address
 import akka.cluster.ClusterEvent._
 import akka.cluster.{MemberStatus, Member}
 import scala.collection.immutable
@@ -9,31 +10,50 @@ import scala.concurrent.duration.FiniteDuration
 abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
 
+  private var leader = false
+  private var roleLeader: Map[String, Boolean] = Map.empty
+
   private var membersByAddress: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ordering)
 
   def receiveEvent = {
+     case LeaderChanged(leaderOption) =>
+      leader = leaderOption.exists(_ == selfAddress)
+      onLeaderChanged(leaderOption)
+    case RoleLeaderChanged(role, leaderOption) =>
+      roleLeader = roleLeader + (role -> leaderOption.exists(_ == selfAddress))
+      onRoleLeaderChanged(role, leaderOption)
     case MemberUp(m) =>
       replaceMember(m)
     case UnreachableMember(m) =>
       replaceMember(m)
       unreachableMember(m)
 
-    case ReachableMember(m) =>
+    case ReachableMember(m)   =>
       replaceMember(m)
       remove(m)
     case MemberLeft(m) =>
       replaceMember(m)
     case MemberExited(m) =>
       replaceMember(m)
-    case MemberRemoved(m, prev) =>
+    case MemberRemoved(m, prev)  =>
       remove(m)
       removeMember(m)
-      //onMemberRemoved(m, prev)
+      onMemberRemoved(m, prev)
   }
 
-  //def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
+  def isLeader: Boolean = leader
+
+  def isRoleLeaderOf(role: String): Boolean = roleLeader.getOrElse(role, false)
+
+  def onLeaderChanged(leader: Option[Address]): Unit = {}
+
+  def onRoleLeaderChanged(role: String, leader: Option[Address]): Unit = {}
+
+  def onMemberRemoved(member: Member, previousStatus: MemberStatus): Unit = {}
 
   override def initialize(state: CurrentClusterState): Unit = {
+    leader = state.leader.exists(_ == selfAddress)
+    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress))
     membersByAddress = immutable.SortedSet.empty(Member.ordering) union state.members.filterNot {m =>
       m.status == MemberStatus.Removed
     }
@@ -49,18 +69,40 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
     membersByAddress -= member
   }
 
+  def isLeaderOf(majorityRole: Option[String]): Boolean = majorityRole.fold(isLeader)(isRoleLeaderOf)
+
+  def targetMember: SortedSet[Member] = membersByAddress.filter { m =>
+    (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
+      !pendingUnreachableMembers.contains(m)
+  }
+
+  def majorityMemberOf(role: Option[String]): SortedSet[Member] = {
+    val ms = targetMember
+    role.fold(ms)(r => ms.filter(_.hasRole(r)))
+  }
+
   def isMajority(role: Option[String]): Boolean = {
-    val targets = targetMembers(role)
-    val okMembers = targets filter isOK
-    val koMembers = targets -- okMembers
+    val ms = majorityMemberOf(role)
+    val okMembers = ms filter isOK
+    val koMembers = ms -- okMembers
 
     val isEqual = okMembers.size == koMembers.size
     return (okMembers.size > koMembers.size ||
-      isEqual && okMembers.headOption.map(okMembers.contains(_)).getOrElse(true))
+      isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
   }
 
-  private def targetMembers(role: Option[String]): SortedSet[Member] = {
-    role.fold(membersByAddress)(r => membersByAddress.filter(_.hasRole(r)))
+  def isMajorityAfterDown(members: Set[Member], role: Option[String]): Boolean = {
+    val minus = if (role.isEmpty) members else {
+      val r = role.get
+      members.filter(_.hasRole(r))
+    }
+    val ms = majorityMemberOf(role) -- minus
+    val okMembers = ms filter isOK
+    val koMembers = ms -- okMembers
+
+    val isEqual = okMembers.size == koMembers.size
+    return (okMembers.size > koMembers.size ||
+      isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
   }
 
   private def isOK(member: Member) = {
