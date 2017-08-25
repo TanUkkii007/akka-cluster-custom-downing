@@ -17,7 +17,7 @@ class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
       val r = system.settings.config.getString("custom-downing.majority-auto-downing.majority-member-role")
       if (r.isEmpty) None else Some(r)
     }
-    val downIfInMinority = system.settings.config.getBoolean("custom-downing.quorum-leader-auto-downing.down-if-in-minority")
+    val downIfInMinority = system.settings.config.getBoolean("custom-downing.majority-leader-auto-downing.down-if-in-minority")
     val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.majority-auto-downing.shutdown-actor-system-on-resolution")
     Some(MajorityLeaderAutoDown.props(majorityMemberRole, downIfInMinority, shutdownActorSystem, stableAfter))
   }
