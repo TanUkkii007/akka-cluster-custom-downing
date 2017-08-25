@@ -18,14 +18,14 @@ class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
       if (r.isEmpty) None else Some(r)
     }
     val downIfInMinority = system.settings.config.getBoolean("custom-downing.majority-leader-auto-downing.down-if-in-minority")
-    val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.majority-auto-downing.shutdown-actor-system-on-resolution")
+    val shutdownActorSystem = system.settings.config.getBoolean("custom-downing.majority-leader-auto-downing.shutdown-actor-system-on-resolution")
     Some(MajorityLeaderAutoDown.props(majorityMemberRole, downIfInMinority, shutdownActorSystem, stableAfter))
   }
 }
 
 private[autodown] object MajorityLeaderAutoDown {
   def props(majorityMemberRole: Option[String], downIfInMinority: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration): Props =
-    Props(classOf[MajorityLeaderAutoDown], majorityMemberRole, shutdownActorSystem, autoDownUnreachableAfter)
+    Props(classOf[MajorityLeaderAutoDown], majorityMemberRole, downIfInMinority, shutdownActorSystem, autoDownUnreachableAfter)
 }
 
 private[autodown] class MajorityLeaderAutoDown(majorityMemberRole: Option[String], downIfInMinority: Boolean, shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)

@@ -71,13 +71,8 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
 
   def isLeaderOf(majorityRole: Option[String]): Boolean = majorityRole.fold(isLeader)(isRoleLeaderOf)
 
-  def targetMember: SortedSet[Member] = membersByAddress.filter { m =>
-    (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
-      !pendingUnreachableMembers.contains(m)
-  }
-
   def majorityMemberOf(role: Option[String]): SortedSet[Member] = {
-    val ms = targetMember
+    val ms = membersByAddress
     role.fold(ms)(r => ms.filter(_.hasRole(r)))
   }
 
@@ -96,9 +91,9 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
       val r = role.get
       members.filter(_.hasRole(r))
     }
-    val ms = majorityMemberOf(role) -- minus
-    val okMembers = ms filter isOK
-    val koMembers = ms -- okMembers
+    val ms = majorityMemberOf(role)
+    val okMembers = (ms filter isOK) -- minus
+    val koMembers =  ms -- okMembers
 
     val isEqual = okMembers.size == koMembers.size
     return (okMembers.size > koMembers.size ||

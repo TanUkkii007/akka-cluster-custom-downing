@@ -16,7 +16,7 @@ final case class MultiNodeMajorityLeaderAutoDownSpecConfig(failureDetectorPuppet
     """
       |akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.MajorityLeaderAutoDowning"
       |custom-downing {
-      |  stable-after = 1s
+      |  stable-after = 2s
       |
       |  majority-leader-auto-downing {
       |    role = "role"
