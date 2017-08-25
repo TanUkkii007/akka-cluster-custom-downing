@@ -28,7 +28,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
       replaceMember(m)
       unreachableMember(m)
 
-    case ReachableMember(m)   =>
+    case ReachableMember(m) =>
       replaceMember(m)
       remove(m)
     case MemberLeft(m) =>

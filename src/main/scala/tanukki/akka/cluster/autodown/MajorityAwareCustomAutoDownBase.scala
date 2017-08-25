@@ -23,19 +23,25 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
       roleLeader = roleLeader + (role -> leaderOption.exists(_ == selfAddress))
       onRoleLeaderChanged(role, leaderOption)
     case MemberUp(m) =>
+      println("MemberUp: " + m.toString)
       replaceMember(m)
     case UnreachableMember(m) =>
+      println("UnreachableMember: " + m.toString)
       replaceMember(m)
       unreachableMember(m)
 
     case ReachableMember(m)   =>
+      println("ReachableMember: " + m.toString)
       replaceMember(m)
       remove(m)
     case MemberLeft(m) =>
+      println("MemberLeft: " + m.toString)
       replaceMember(m)
     case MemberExited(m) =>
+      println("MemberExited: " + m.toString)
       replaceMember(m)
     case MemberRemoved(m, prev)  =>
+      println("MemberRemoved: " + m.toString)
       remove(m)
       removeMember(m)
       onMemberRemoved(m, prev)
@@ -83,8 +89,11 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
 
   def isMajority(role: Option[String]): Boolean = {
     val ms = majorityMemberOf(role)
+    println(ms.toString)
     val okMembers = ms filter isOK
+    println(okMembers.toString)
     val koMembers = ms -- okMembers
+    println(okMembers.toString)
 
     val isEqual = okMembers.size == koMembers.size
     return (okMembers.size > koMembers.size ||

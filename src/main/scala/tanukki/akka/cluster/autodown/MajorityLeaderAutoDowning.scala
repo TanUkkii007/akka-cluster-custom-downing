@@ -28,7 +28,7 @@ private[autodown] object MajorityLeaderAutoDown {
 }
 
 private[autodown] class MajorityLeaderAutoDown(majorityMemberRole: Option[String], shutdownActorSystem: Boolean, autoDownUnreachableAfter: FiniteDuration)
-  extends MajorityLeaderAutoDownBase(majorityMemberRole, autoDownUnreachableAfter) with ClusterCustomDowning {
+  extends MajorityLeaderAutoDownBase(majorityMemberRole, shutdownActorSystem, autoDownUnreachableAfter) with ClusterCustomDowning {
 
   override def down(node: Address): Unit = {
     log.info("Majority is auto-downing unreachable node [{}]", node)

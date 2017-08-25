@@ -6,7 +6,7 @@ import akka.cluster.{MemberStatus, Member}
 
 import scala.concurrent.duration.FiniteDuration
 
-abstract class MajorityLeaderAutoDownBase(majorityMemberRole: Option[String], autoDownUnreachableAfter: FiniteDuration)
+abstract class MajorityLeaderAutoDownBase(majorityMemberRole: Option[String], downIfInMinority: Boolean, autoDownUnreachableAfter: FiniteDuration)
     extends MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter) {
 
   override def onLeaderChanged(leader: Option[Address]): Unit = {
@@ -42,7 +42,7 @@ abstract class MajorityLeaderAutoDownBase(majorityMemberRole: Option[String], au
   override def downOrAddPendingAll(members: Set[Member]): Unit = {
     if (isMajorityAfterDown(members, majorityMemberRole)) {
       members.foreach(downOrAddPending)
-    } else {
+    } else if (downIfInMinority) {
       shutdownSelf()
     }
   }
