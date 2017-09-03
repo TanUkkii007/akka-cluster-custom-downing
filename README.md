@@ -119,6 +119,26 @@ custom-downing {
 
 ![QuorumLeaderAutoDowning](img/static_quorum.png)
 
+### MajorityLeaderAutoDowning
+
+`MajorityLeaderAutoDowning` is similar to `QuorumLeaderAutoDowning. However, instead of a static specified quorum size this strategy automatically keeps the partition with the largest amount of nodes. If the partitions is of equal size, the partition that contains the node with the globally lowest address is kept. The strategy is the same as [keep majority](http://doc.akka.io/docs/akka/rp-15v09p02/scala/split-brain-resolver.html#Keep_Majority) strategy of Split Brain Resolver from Typesafe reactive platform.
+If a role is set by `majority-member-role`, the strategy is only enforced to the nodes with the specified role.
+
+```scala
+
+akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.MajorityLeaderAutoDowning"
+
+custom-downing {
+  stable-after = 20s
+
+  majority-auto-downing {
+    majority-member-role = ""
+    down-if-in-minority = true
+  }
+}
+
+```
+
 
 ## Usage of Leader based downing strategies
 
