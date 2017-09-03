@@ -7,16 +7,16 @@ import scala.collection.immutable
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 
-abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachableAfter: FiniteDuration)
-  extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
+abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
+    extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
 
   private var leader = false
   private var roleLeader: Map[String, Boolean] = Map.empty
 
-  private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
+  private var membersByAddress: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ordering)
 
   def receiveEvent = {
-    case LeaderChanged(leaderOption) =>
+     case LeaderChanged(leaderOption) =>
       leader = leaderOption.exists(_ == selfAddress)
       onLeaderChanged(leaderOption)
     case RoleLeaderChanged(role, leaderOption) =>
@@ -28,7 +28,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
       replaceMember(m)
       unreachableMember(m)
 
-    case ReachableMember(m) =>
+    case ReachableMember(m)   =>
       replaceMember(m)
       remove(m)
     case MemberLeft(m) =>
@@ -54,47 +54,56 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
   override def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.exists(_ == selfAddress)
     roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress))
-    membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot {m =>
+    membersByAddress = immutable.SortedSet.empty(Member.ordering) union state.members.filterNot {m =>
       m.status == MemberStatus.Removed
     }
     super.initialize(state)
   }
 
   def replaceMember(member: Member): Unit = {
-    membersByAge -= member
-    membersByAge += member
+    membersByAddress -= member
+    membersByAddress += member
   }
 
   def removeMember(member: Member): Unit = {
-    membersByAge -= member
+    membersByAddress -= member
   }
 
-  def isLeaderOf(quorumRole: Option[String]): Boolean = quorumRole.fold(isLeader)(isRoleLeaderOf)
+  def isLeaderOf(majorityRole: Option[String]): Boolean = majorityRole.fold(isLeader)(isRoleLeaderOf)
 
-  def targetMember: SortedSet[Member] = membersByAge.filter { m =>
-    (m.status == MemberStatus.Up || m.status == MemberStatus.Leaving) &&
-      !pendingUnreachableMembers.contains(m)
-  }
-
-  def quorumMemberOf(role: Option[String]): SortedSet[Member] = {
-    val ms = targetMember
+  def majorityMemberOf(role: Option[String]): SortedSet[Member] = {
+    val ms = membersByAddress
     role.fold(ms)(r => ms.filter(_.hasRole(r)))
   }
 
-  def isQuorumMet(role: Option[String]) = {
-    val ms = quorumMemberOf(role)
-    ms.size >= quorumSize
+  def isMajority(role: Option[String]): Boolean = {
+    val ms = majorityMemberOf(role)
+    val okMembers = ms filter isOK
+    val koMembers = ms -- okMembers
+
+    val isEqual = okMembers.size == koMembers.size
+    return (okMembers.size > koMembers.size ||
+      isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
   }
 
-  def isQuorumMetAfterDown(members: Set[Member], role: Option[String]) = {
-    val minus = if (role.isEmpty) members.size else {
+  def isMajorityAfterDown(members: Set[Member], role: Option[String]): Boolean = {
+    val minus = if (role.isEmpty) members else {
       val r = role.get
-      members.count(_.hasRole(r))
+      members.filter(_.hasRole(r))
     }
-    val ms = quorumMemberOf(role)
-    ms.size - minus >= quorumSize
+    val ms = majorityMemberOf(role)
+    val okMembers = (ms filter isOK) -- minus
+    val koMembers =  ms -- okMembers
+
+    val isEqual = okMembers.size == koMembers.size
+    return (okMembers.size > koMembers.size ||
+      isEqual && ms.headOption.map(okMembers.contains(_)).getOrElse(true))
   }
 
-  def isUnreachableStable: Boolean = scheduledUnreachableMembers.isEmpty
+  private def isOK(member: Member) = {
+    (member.status == MemberStatus.Up || member.status == MemberStatus.Leaving) &&
+    (!pendingUnreachableMembers.contains(member) && !unstableUnreachableMembers.contains(member))
+  }
 
+  private def isKO(member: Member): Boolean = !isOK(member)
 }
