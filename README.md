@@ -131,9 +131,10 @@ akka.cluster.downing-provider-class = "tanukki.akka.cluster.autodown.MajorityLea
 custom-downing {
   stable-after = 20s
 
-  majority-auto-downing {
+  majority-leader-auto-downing {
     majority-member-role = ""
     down-if-in-minority = true
+    shutdown-actor-system-on-resolution = true
   }
 }
 

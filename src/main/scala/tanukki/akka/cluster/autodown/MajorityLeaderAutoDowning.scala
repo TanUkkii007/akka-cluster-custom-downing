@@ -1,6 +1,5 @@
 package tanukki.akka.cluster.autodown
 
-import akka.ConfigurationException
 import akka.actor.{Address, Props, ActorSystem}
 import akka.cluster.{Cluster, DowningProvider}
 import scala.concurrent.Await
@@ -14,7 +13,7 @@ class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
   override def downingActorProps: Option[Props] = {
     val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
     val majorityMemberRole = {
-      val r = system.settings.config.getString("custom-downing.majority-auto-downing.majority-member-role")
+      val r = system.settings.config.getString("custom-downing.majority-leader-auto-downing.majority-member-role")
       if (r.isEmpty) None else Some(r)
     }
     val downIfInMinority = system.settings.config.getBoolean("custom-downing.majority-leader-auto-downing.down-if-in-minority")
