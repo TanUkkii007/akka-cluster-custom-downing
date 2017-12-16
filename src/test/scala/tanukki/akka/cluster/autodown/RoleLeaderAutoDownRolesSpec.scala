@@ -67,7 +67,7 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
       val a = autoDownActor(Duration.Zero)
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderB.address))
       a ! UnreachableMember(memberC)
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
     }
 
     "down unreachable when becoming role leader" in {
@@ -82,7 +82,7 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
       val a = autoDownActor(2.seconds)
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderA.address))
       a ! UnreachableMember(memberB)
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
       expectMsg(DownCalled(memberB.address))
     }
 
@@ -91,7 +91,7 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderB.address))
       a ! UnreachableMember(memberC)
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderA.address))
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
       expectMsg(DownCalled(memberC.address))
     }
 
@@ -100,7 +100,7 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderA.address))
       a ! UnreachableMember(memberC)
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderB.address))
-      expectNoMsg(3.second)
+      expectNoMessage(3.second)
     }
 
     "not down when unreachable become reachable inbetween detection and specified duration" in {
@@ -108,7 +108,7 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderA.address))
       a ! UnreachableMember(memberB)
       a ! ReachableMember(memberB)
-      expectNoMsg(3.second)
+      expectNoMessage(3.second)
     }
 
     "not down when unreachable is removed inbetween detection and specified duration" in {
@@ -116,14 +116,14 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderA.address))
       a ! UnreachableMember(memberB)
       a ! MemberRemoved(memberB.copy(Removed), previousStatus = Exiting)
-      expectNoMsg(3.second)
+      expectNoMessage(3.second)
     }
 
     "not down when unreachable is already Down" in {
       val a = autoDownActor(Duration.Zero)
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderA.address))
       a ! UnreachableMember(memberB.copy(Down))
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
     }
 
     /*-------------------------------------------------------------------*/
@@ -132,7 +132,7 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
       val a = autoDownActor(Duration.Zero)
       a ! RoleLeaderChanged(leaderRole, Some(roleLeaderA.address))
       a ! UnreachableMember(memberD)
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
     }
   }
 }

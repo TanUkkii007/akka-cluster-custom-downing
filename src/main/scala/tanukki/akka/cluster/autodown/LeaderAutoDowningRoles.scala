@@ -8,9 +8,9 @@ import scala.concurrent.duration._
 
 final class LeaderAutoDowningRoles(system: ActorSystem) extends DowningProvider {
 
-  private def clusterSettings = Cluster(system).settings
+  private[this] val cluster = Cluster(system)
 
-  override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
+  override def downRemovalMargin: FiniteDuration = cluster.downingProvider.downRemovalMargin
 
   override def downingActorProps: Option[Props] = {
     val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
