@@ -4,7 +4,7 @@ organization := "com.github.TanUkkii007"
 
 homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.12.4"
 
 crossScalaVersions := Seq("2.11.8", "2.12.0")
 
