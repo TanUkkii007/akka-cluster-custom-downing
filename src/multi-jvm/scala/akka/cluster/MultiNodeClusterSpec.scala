@@ -113,8 +113,6 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
         classOf[ClusterHeartbeatSender.HeartbeatRsp],
         classOf[GossipEnvelope],
         classOf[GossipStatus],
-        classOf[MetricsGossipEnvelope],
-        classOf[ClusterEvent.ClusterMetricsChanged],
         classOf[InternalClusterAction.Tick],
         classOf[akka.actor.PoisonPill],
         classOf[akka.dispatch.sysmsg.DeathWatchNotification],
@@ -303,10 +301,10 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * check members are stay unreachable for specified duration
     */
   def remainMembersUnreachable(
-                               numberOfMembers: Int,
-                               unreachableMember: Set[Address] = Set.empty,
-                               duration: FiniteDuration = 25.seconds,
-                               interval: FiniteDuration = 1 second): Unit = {
+                                numberOfMembers: Int,
+                                unreachableMember: Set[Address] = Set.empty,
+                                duration: FiniteDuration = 25.seconds,
+                                interval: FiniteDuration = 1 second): Unit = {
     var t = 0 seconds
 
     while (t < duration) {

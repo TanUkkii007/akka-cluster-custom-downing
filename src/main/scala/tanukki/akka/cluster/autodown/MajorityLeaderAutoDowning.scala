@@ -1,14 +1,16 @@
 package tanukki.akka.cluster.autodown
 
-import akka.actor.{Address, Props, ActorSystem}
+import akka.actor.{ActorSystem, Address, Props}
 import akka.cluster.{Cluster, DowningProvider}
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class MajorityLeaderAutoDowning(system: ActorSystem) extends DowningProvider {
-  private def clusterSettings = Cluster(system).settings
 
-  override def downRemovalMargin: FiniteDuration = clusterSettings.DownRemovalMargin
+  private[this] val cluster = Cluster(system)
+
+  override def downRemovalMargin: FiniteDuration = cluster.downingProvider.downRemovalMargin
 
   override def downingActorProps: Option[Props] = {
     val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis

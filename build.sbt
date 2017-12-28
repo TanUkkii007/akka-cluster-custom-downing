@@ -4,7 +4,7 @@ organization := "com.github.TanUkkii007"
 
 homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.12.4"
 
 crossScalaVersions := Seq("2.11.8", "2.12.0")
 
@@ -20,7 +20,7 @@ scalacOptions ++= Seq(
 
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-val akkaVersion = "2.4.14"
+val akkaVersion = "2.5.7"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
