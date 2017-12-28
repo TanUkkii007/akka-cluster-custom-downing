@@ -21,13 +21,13 @@ case class DownCalledBySecondaryOldest(address: Address)
 case object ShutDownCausedBySplitBrainResolver
 
 object OldestAutoDownRolesSpec {
-  val testRole = Set("testRole")
+  val testRole = Set("testRole", "dc-1")
   val testRoleOpt = Some("testRole")
 
   val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRole)
   val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRole)
   val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRole)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole"))
+  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", "dc-1"))
 
   val initialMembersByAge = immutable.SortedSet(memberA, memberB, memberC, memberD)(Member.ageOrdering)
 
