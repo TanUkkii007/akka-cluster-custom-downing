@@ -57,7 +57,7 @@ For sbt, add following lines to build.sbt.
 ```
 resolvers += Resolver.bintrayRepo("tanukkii007", "maven")
 
-libraryDependencies += "com.github.TanUkkii007" %% "akka-cluster-custom-downing" % "0.0.9"
+libraryDependencies += "com.github.TanUkkii007" %% "akka-cluster-custom-downing" % "0.0.10"
 ```
 
 Both Scala 2.11 and 2.12 are supported.
