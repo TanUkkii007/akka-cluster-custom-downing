@@ -1,7 +1,9 @@
 package tanukki.akka.cluster.autodown
 
 import akka.cluster.ClusterEvent._
-import akka.cluster.{MemberStatus, Member}
+import akka.cluster.{Member, MemberStatus}
+import akka.event.Logging
+
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
@@ -9,23 +11,30 @@ import scala.concurrent.duration.FiniteDuration
 abstract class OldestAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
   extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
 
+  private val log = Logging(context.system, this)
+
   private var membersByAge: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ageOrdering)
 
   def receiveEvent = {
     case MemberUp(m) =>
+      log.info("{} is up", m)
       replaceMember(m)
     case UnreachableMember(m) =>
+      log.info("{} is unreachable", m)
       replaceMember(m)
       unreachableMember(m)
-
     case ReachableMember(m)   =>
+      log.info("{} is reachable", m)
       replaceMember(m)
       remove(m)
     case MemberLeft(m) =>
+      log.info("{} is left the cluster", m)
       replaceMember(m)
     case MemberExited(m) =>
+      log.info("{} exited the cluster", m)
       replaceMember(m)
     case MemberRemoved(m, prev)  =>
+      log.info("{} was removed from the cluster", m)
       remove(m)
       removeMember(m)
       onMemberRemoved(m, prev)

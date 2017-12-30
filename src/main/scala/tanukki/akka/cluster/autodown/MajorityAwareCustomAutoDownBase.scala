@@ -2,7 +2,9 @@ package tanukki.akka.cluster.autodown
 
 import akka.actor.Address
 import akka.cluster.ClusterEvent._
-import akka.cluster.{MemberStatus, Member}
+import akka.cluster.{Member, MemberStatus}
+import akka.event.Logging
+
 import scala.collection.immutable
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
@@ -10,32 +12,44 @@ import scala.concurrent.duration.FiniteDuration
 abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration)
     extends CustomAutoDownBase(autoDownUnreachableAfter) with SplitBrainResolver {
 
+  private val log = Logging(context.system, this)
+
   private var leader = false
   private var roleLeader: Map[String, Boolean] = Map.empty
-
   private var membersByAddress: immutable.SortedSet[Member] = immutable.SortedSet.empty(Member.ordering)
 
   def receiveEvent = {
      case LeaderChanged(leaderOption) =>
-      leader = leaderOption.exists(_ == selfAddress)
+      leader = leaderOption.contains(selfAddress)
+       if (isLeader) {
+         log.info("This node is the new Leader")
+       }
       onLeaderChanged(leaderOption)
     case RoleLeaderChanged(role, leaderOption) =>
-      roleLeader = roleLeader + (role -> leaderOption.exists(_ == selfAddress))
+      roleLeader = roleLeader + (role -> leaderOption.contains(selfAddress))
+      if (isRoleLeaderOf(role)) {
+        log.info("This node is the new role leader for role {}", role)
+      }
       onRoleLeaderChanged(role, leaderOption)
     case MemberUp(m) =>
+      log.info("{} is up", m)
       replaceMember(m)
     case UnreachableMember(m) =>
+      log.info("{} is unreachable", m)
       replaceMember(m)
       unreachableMember(m)
-
     case ReachableMember(m)   =>
+      log.info("{} is reachable", m)
       replaceMember(m)
       remove(m)
     case MemberLeft(m) =>
+      log.info("{} left the cluster", m)
       replaceMember(m)
     case MemberExited(m) =>
+      log.info("{} exited the cluster", m)
       replaceMember(m)
     case MemberRemoved(m, prev)  =>
+      log.info("{} was removed from the cluster", m)
       remove(m)
       removeMember(m)
       onMemberRemoved(m, prev)
