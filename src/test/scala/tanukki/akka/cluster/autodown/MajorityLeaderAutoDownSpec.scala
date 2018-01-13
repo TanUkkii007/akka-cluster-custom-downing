@@ -12,13 +12,15 @@ import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
 import akka.cluster.{Member, TestMember}
+
 import scala.collection.immutable
+import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration._
 
 object MajorityLeaderAutoDownSpec {
-  val testRole = Set("testRole")
-  val leaderRole = testRole.head
+  val testRole = Set("testRole", "dc-1")
+  val leaderRole: String = testRole.head
 
   val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRole)
   val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRole)
@@ -26,7 +28,7 @@ object MajorityLeaderAutoDownSpec {
   val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, testRole)
   val memberE = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, testRole)
 
-  val initialMembersByAddress = immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ordering)
+  val initialMembersByAddress: SortedSet[Member] = immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ordering)
 
   class MajorityLeaderAutoDownTestActor(address: Address,
                                         majorityRole: Option[String],

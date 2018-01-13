@@ -12,21 +12,23 @@ import akka.actor._
 import akka.cluster.ClusterEvent._
 import akka.cluster.MemberStatus._
 import akka.cluster.{Member, TestMember}
+
 import scala.collection.immutable
+import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration._
 
 object QuorumLeaderAutoDownSpec {
-  val testRole = Set("testRole", "dc-1")
-  val leaderRole = testRole.head
+  val memberRole = Set("testRole", "dc-1")
+  val leaderRole: String = memberRole.head
 
-  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRole)
-  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRole)
-  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRole)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, testRole)
-  val memberE = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, testRole)
+  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, memberRole)
+  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, memberRole)
+  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, memberRole)
+  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, memberRole)
+  val memberE = TestMember(Address("akka.tcp", "sys", "e", 2552), Up, memberRole)
 
-  val initialMembersByAge = immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ageOrdering)
+  val initialMembersByAge: SortedSet[Member] = immutable.SortedSet(memberA, memberB, memberC, memberD, memberE)(Member.ageOrdering)
 
   class QuorumLeaderAutoDownTestActor(address: Address,
                                       quorumRole: Option[String],
