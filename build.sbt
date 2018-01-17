@@ -20,15 +20,15 @@ scalacOptions ++= Seq(
 
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-val akkaVersion = "2.5.7"
+val akkaVersion = "2.5.9"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
 //  "com.typesafe.akka" %% "akka-cluster" % akkaVersion  % "test" classifier "tests",
-  "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % "test",
+  "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
 //  "com.typesafe.akka" %% "akka-testkit" % akkaVersion  % "test" classifier "tests",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test
 )
 
 compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test)

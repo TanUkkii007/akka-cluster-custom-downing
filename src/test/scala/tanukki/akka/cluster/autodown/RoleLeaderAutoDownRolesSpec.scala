@@ -19,15 +19,18 @@ import scala.concurrent.duration._
 object RoleLeaderAutoDownRolesSpec {
 
   val leaderRole = "leaderRole"
-  val testRole = Set("testRole")
+  val dataCenterRole = "dc-1"
+  val testRole = "testRole"
+  val leaderRoles = Set("leaderRole", dataCenterRole)
+  val testRoles = Set(testRole, dataCenterRole)
 
-  val roleLeaderA = TestMember(Address("akka.tcp", "sys", "la", 2552), Up, Set(leaderRole))
-  val roleLeaderB = TestMember(Address("akka.tcp", "sys", "lb", 2552), Up, Set(leaderRole))
-  val roleLeaderC = TestMember(Address("akka.tcp", "sys", "lc", 2552), Up, Set(leaderRole))
-  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRole)
-  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRole)
-  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRole)
-  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole"))
+  val roleLeaderA = TestMember(Address("akka.tcp", "sys", "la", 2552), Up, leaderRoles)
+  val roleLeaderB = TestMember(Address("akka.tcp", "sys", "lb", 2552), Up, leaderRoles)
+  val roleLeaderC = TestMember(Address("akka.tcp", "sys", "lc", 2552), Up, leaderRoles)
+  val memberA = TestMember(Address("akka.tcp", "sys", "a", 2552), Up, testRoles)
+  val memberB = TestMember(Address("akka.tcp", "sys", "b", 2552), Up, testRoles)
+  val memberC = TestMember(Address("akka.tcp", "sys", "c", 2552), Up, testRoles)
+  val memberD = TestMember(Address("akka.tcp", "sys", "d", 2552), Up, Set("otherRole", dataCenterRole))
 
   class RoleLeaderAutoDownRolesTestActor(leaderRole: String,
                                          targetRoles:              Set[String],
@@ -52,7 +55,7 @@ class RoleLeaderAutoDownRolesSpec extends AkkaSpec(ActorSystem("LeaderAutoDownRo
   import RoleLeaderAutoDownRolesSpec._
 
   def autoDownActor(autoDownUnreachableAfter: FiniteDuration): ActorRef =
-    system.actorOf(Props(classOf[RoleLeaderAutoDownRolesTestActor], leaderRole, testRole, autoDownUnreachableAfter, testActor))
+    system.actorOf(Props(classOf[RoleLeaderAutoDownRolesTestActor], leaderRole, Set(testRole), autoDownUnreachableAfter, testActor))
 
   "RoleLeaderAutoDownRoles" must {
 
