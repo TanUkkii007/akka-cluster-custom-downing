@@ -52,8 +52,9 @@ object MultiNodeClusterSpec {
     akka.loggers = ["akka.testkit.TestEventListener"]
     akka.test {
       single-expect-default = 5 s
+      timefactor = ${?TEST_TIMEFACTOR}
     }
-                                                        """)
+    akka.testconductor.barrier-timeout = ${?TESTCONDUCTOR_BARRIER_TIMEOUT}""")
 
   // sometimes we need to coordinate test shutdown with messages instead of barriers
   object EndActor {
