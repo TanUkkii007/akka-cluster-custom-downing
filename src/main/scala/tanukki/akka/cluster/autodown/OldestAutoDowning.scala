@@ -1,8 +1,10 @@
 package tanukki.akka.cluster.autodown
 
 import akka.ConfigurationException
-import akka.actor.{Address, Props, ActorSystem}
+import akka.actor.{ActorSystem, Address, Props}
 import akka.cluster.{Cluster, DowningProvider}
+import com.typesafe.config.Config
+
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -10,7 +12,15 @@ class OldestAutoDowning(system: ActorSystem) extends DowningProvider {
 
   private[this] val cluster = Cluster(system)
 
-  override def downRemovalMargin: FiniteDuration = cluster.downingProvider.downRemovalMargin
+  private val config: Config = system.settings.config
+
+  override def downRemovalMargin: FiniteDuration = {
+    val key = "custom-downing.down-removal-margin"
+    config.getString(key) match {
+      case "off" ⇒ Duration.Zero
+      case _     ⇒ Duration(config.getDuration(key, MILLISECONDS), MILLISECONDS)
+    }
+  }
 
   override def downingActorProps: Option[Props] = {
     val stableAfter = system.settings.config.getDuration("custom-downing.stable-after").toMillis millis
