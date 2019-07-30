@@ -35,7 +35,7 @@ abstract class RoleLeaderAwareCustomAutoDownBase(autoDownUnreachableAfter: Finit
   }
 
   override def initialize(state: CurrentClusterState): Unit = {
-    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress))
+    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     super.initialize(state)
   }
 }

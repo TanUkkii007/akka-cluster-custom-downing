@@ -254,7 +254,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * be determined from the `RoleName`.
     */
   def assertLeader(nodesInCluster: RoleName*): Unit =
-    if (nodesInCluster.contains(myself)) assertLeaderIn(nodesInCluster.to[immutable.Seq])
+    if (nodesInCluster.contains(myself)) assertLeaderIn(nodesInCluster.toSeq)
 
   /**
     * Assert that the cluster has elected the correct leader
@@ -267,7 +267,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * member with status Up or Leaving and that information can't
     * be determined from the `RoleName`.
     */
-  def assertLeaderIn(nodesInCluster: immutable.Seq[RoleName]): Unit =
+  def assertLeaderIn(nodesInCluster: Seq[RoleName]): Unit =
     if (nodesInCluster.contains(myself)) {
       nodesInCluster.length should not be (0)
       val expectedLeader = roleOfLeader(nodesInCluster)
@@ -291,7 +291,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
       if (!canNotBePartOfMemberRing.isEmpty) // don't run this on an empty set
         awaitAssert(canNotBePartOfMemberRing foreach (a ⇒ clusterView.members.map(_.address) should not contain (a)))
       awaitAssert(clusterView.members.size should ===(numberOfMembers))
-      awaitAssert(clusterView.members.map(_.status) should ===(Set(MemberStatus.Up)))
+      awaitAssert(clusterView.members.toList.map(_.status).toSet should ===(Set(MemberStatus.Up)))
       // clusterView.leader is updated by LeaderChanged, await that to be updated also
       val expectedLeader = clusterView.members.headOption.map(_.address)
       awaitAssert(clusterView.leader should ===(expectedLeader))
@@ -310,7 +310,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
 
     while (t < duration) {
       awaitAssert(clusterView.members.size should ===(numberOfMembers))
-      awaitAssert(clusterView.members.map(_.status) should ===(Set(MemberStatus.Up)))
+      awaitAssert(clusterView.members.toList.map(_.status).toSet should ===(Set(MemberStatus.Up)))
       awaitAssert(clusterView.unreachableMembers.map(_.status) should ===(Set(MemberStatus.Up)))
       awaitAssert(unreachableMember.foreach(a => clusterView.unreachableMembers.map(_.address) should contain(a)))
       Thread.sleep(interval.toMillis)
@@ -335,7 +335,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * member with status Up or Leaving and that information can't
     * be determined from the `RoleName`.
     */
-  def roleOfLeader(nodesInCluster: immutable.Seq[RoleName] = roles): RoleName = {
+  def roleOfLeader(nodesInCluster: Seq[RoleName] = roles): RoleName = {
     nodesInCluster.length should not be (0)
     nodesInCluster.sorted.head
   }

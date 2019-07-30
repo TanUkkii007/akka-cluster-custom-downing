@@ -57,10 +57,10 @@ For sbt, add following lines to build.sbt.
 ```
 resolvers += Resolver.bintrayRepo("tanukkii007", "maven")
 
-libraryDependencies += "com.github.TanUkkii007" %% "akka-cluster-custom-downing" % "0.0.12"
+libraryDependencies += "com.github.TanUkkii007" %% "akka-cluster-custom-downing" % "0.0.13"
 ```
 
-Both Scala 2.11 and 2.12 are supported.
+Scala 2.11, 2.12 and 2.13 are supported.
 
 ## Usage of split brain resolving strategy
 
