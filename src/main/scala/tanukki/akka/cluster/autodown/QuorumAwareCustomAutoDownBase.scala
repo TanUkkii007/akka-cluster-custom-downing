@@ -68,7 +68,7 @@ abstract class QuorumAwareCustomAutoDownBase(quorumSize: Int, autoDownUnreachabl
 
   override def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.exists(_ == selfAddress)
-    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress))
+    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAge = immutable.SortedSet.empty(Member.ageOrdering) union state.members.filterNot {m =>
       m.status == MemberStatus.Removed
     }

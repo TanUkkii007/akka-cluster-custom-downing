@@ -16,8 +16,8 @@ final class RoleLeaderAutoDowningRoles(system: ActorSystem) extends DowningProvi
   override def downRemovalMargin: FiniteDuration = {
     val key = "custom-downing.down-removal-margin"
     config.getString(key) match {
-      case "off" ⇒ Duration.Zero
-      case _     ⇒ Duration(config.getDuration(key, MILLISECONDS), MILLISECONDS)
+      case "off" => Duration.Zero
+      case _     => Duration(config.getDuration(key, MILLISECONDS), MILLISECONDS)
     }
   }
 

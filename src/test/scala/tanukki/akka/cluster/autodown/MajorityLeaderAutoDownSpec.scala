@@ -81,7 +81,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! CurrentClusterState(members = initialMembersByAddress)
       a ! RoleLeaderChanged(leaderRole, Some(memberB.address))
       a ! UnreachableMember(memberC)
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
     }
 
     "down unreachable when becoming role leader" in {
@@ -98,7 +98,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! CurrentClusterState(members = initialMembersByAddress)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       a ! UnreachableMember(memberB)
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
       expectMsg(DownCalled(memberB.address))
     }
 
@@ -108,7 +108,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! RoleLeaderChanged(leaderRole, Some(memberB.address))
       a ! UnreachableMember(memberC)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
       expectMsg(DownCalled(memberC.address))
     }
 
@@ -118,7 +118,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       a ! UnreachableMember(memberC)
       a ! RoleLeaderChanged(leaderRole, Some(memberB.address))
-      expectNoMsg(3.second)
+      expectNoMessage(3.second)
     }
 
     "not down when unreachable become reachable inbetween detection and specified duration" in {
@@ -127,7 +127,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       a ! UnreachableMember(memberB)
       a ! ReachableMember(memberB)
-      expectNoMsg(3.second)
+      expectNoMessage(3.second)
     }
 
     "not down when unreachable is removed inbetween detection and specified duration" in {
@@ -136,7 +136,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       a ! UnreachableMember(memberB)
       a ! MemberRemoved(memberB.copy(Removed), previousStatus = Exiting)
-      expectNoMsg(3.second)
+      expectNoMessage(3.second)
     }
 
     "not down when unreachable is already Down" in {
@@ -144,7 +144,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! CurrentClusterState(members = initialMembersByAddress)
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       a ! UnreachableMember(memberB.copy(Down))
-      expectNoMsg(1.second)
+      expectNoMessage(1.second)
     }
 
     /*-------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! MemberRemoved(memberB.copy(Removed), Down)
       a ! MemberRemoved(memberC.copy(Removed), Down)
       a ! MemberRemoved(memberD.copy(Removed), Down)
-      expectNoMsg(3.second)
+      expectNoMessage(3.second)
     }
 
     "down unreachable when in majority if members are unreachable" in {
@@ -173,7 +173,7 @@ class MajorityLeaderAutoDownSpec extends AkkaSpec(ActorSystem("OldestAutoDownRol
       a ! RoleLeaderChanged(leaderRole, Some(memberA.address))
       a ! UnreachableMember(memberB)
       a ! UnreachableMember(memberC)
-      expectNoMsg(2.second)
+      expectNoMessage(2.second)
       expectMsgAllOf(DownCalled(memberB.address), DownCalled(memberC.address))
      }
 

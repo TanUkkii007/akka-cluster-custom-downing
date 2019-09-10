@@ -66,20 +66,20 @@ object MultiNodeClusterSpec {
   class EndActor(testActor: ActorRef, target: Option[Address]) extends Actor {
     import EndActor._
     def receive = {
-      case SendEnd ⇒
-        target foreach { t ⇒
+      case SendEnd =>
+        target foreach { t =>
           context.actorSelection(RootActorPath(t) / self.path.elements) ! End
         }
-      case End ⇒
+      case End =>
         testActor forward End
         sender() ! EndAck
-      case EndAck ⇒
+      case EndAck =>
         testActor forward EndAck
     }
   }
 }
 
-trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoroner { self: MultiNodeSpec ⇒
+trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoroner { self: MultiNodeSpec =>
 
   override def initialParticipants = roles.size
 
@@ -105,7 +105,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
         ".*Cluster Node.* - is starting up.*",
         ".*Shutting down cluster Node.*",
         ".*Cluster node successfully shut down.*",
-        ".*Using a dedicated scheduler for cluster.*") foreach { s ⇒
+        ".*Using a dedicated scheduler for cluster.*") foreach { s =>
         sys.eventStream.publish(Mute(EventFilter.info(pattern = s)))
       }
 
@@ -153,11 +153,11 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     */
   implicit def address(role: RoleName): Address = {
     cachedAddresses.get(role) match {
-      case null ⇒
+      case null =>
         val address = node(role).address
         cachedAddresses.put(role, address)
         address
-      case address ⇒ address
+      case address => address
     }
   }
 
@@ -220,7 +220,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     */
   def joinWithin(joinNode: RoleName, max: Duration = remainingOrDefault, interval: Duration = 1.second): Unit = {
     def memberInState(member: Address, status: Seq[MemberStatus]): Boolean =
-      clusterView.members.exists { m ⇒ (m.address == member) && status.contains(m.status) }
+      clusterView.members.exists { m => (m.address == member) && status.contains(m.status) }
 
     cluster join joinNode
     awaitCond({
@@ -243,7 +243,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     import Member.addressOrdering
     val members = gotMembers.toIndexedSeq
     members.size should ===(expectedAddresses.length)
-    expectedAddresses.sorted.zipWithIndex.foreach { case (a, i) ⇒ members(i).address should ===(a) }
+    expectedAddresses.sorted.zipWithIndex.foreach { case (a, i) => members(i).address should ===(a) }
   }
 
   /**
@@ -254,7 +254,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * be determined from the `RoleName`.
     */
   def assertLeader(nodesInCluster: RoleName*): Unit =
-    if (nodesInCluster.contains(myself)) assertLeaderIn(nodesInCluster.to[immutable.Seq])
+    if (nodesInCluster.contains(myself)) assertLeaderIn(nodesInCluster.toSeq)
 
   /**
     * Assert that the cluster has elected the correct leader
@@ -267,7 +267,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * member with status Up or Leaving and that information can't
     * be determined from the `RoleName`.
     */
-  def assertLeaderIn(nodesInCluster: immutable.Seq[RoleName]): Unit =
+  def assertLeaderIn(nodesInCluster: Seq[RoleName]): Unit =
     if (nodesInCluster.contains(myself)) {
       nodesInCluster.length should not be (0)
       val expectedLeader = roleOfLeader(nodesInCluster)
@@ -289,9 +289,9 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
                       timeout:                  FiniteDuration = 25.seconds): Unit = {
     within(timeout) {
       if (!canNotBePartOfMemberRing.isEmpty) // don't run this on an empty set
-        awaitAssert(canNotBePartOfMemberRing foreach (a ⇒ clusterView.members.map(_.address) should not contain (a)))
+        awaitAssert(canNotBePartOfMemberRing foreach (a => clusterView.members.map(_.address) should not contain (a)))
       awaitAssert(clusterView.members.size should ===(numberOfMembers))
-      awaitAssert(clusterView.members.map(_.status) should ===(Set(MemberStatus.Up)))
+      awaitAssert(clusterView.members.toList.map(_.status).toSet should ===(Set(MemberStatus.Up)))
       // clusterView.leader is updated by LeaderChanged, await that to be updated also
       val expectedLeader = clusterView.members.headOption.map(_.address)
       awaitAssert(clusterView.leader should ===(expectedLeader))
@@ -310,7 +310,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
 
     while (t < duration) {
       awaitAssert(clusterView.members.size should ===(numberOfMembers))
-      awaitAssert(clusterView.members.map(_.status) should ===(Set(MemberStatus.Up)))
+      awaitAssert(clusterView.members.toList.map(_.status).toSet should ===(Set(MemberStatus.Up)))
       awaitAssert(clusterView.unreachableMembers.map(_.status) should ===(Set(MemberStatus.Up)))
       awaitAssert(unreachableMember.foreach(a => clusterView.unreachableMembers.map(_.address) should contain(a)))
       Thread.sleep(interval.toMillis)
@@ -335,7 +335,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * member with status Up or Leaving and that information can't
     * be determined from the `RoleName`.
     */
-  def roleOfLeader(nodesInCluster: immutable.Seq[RoleName] = roles): RoleName = {
+  def roleOfLeader(nodesInCluster: Seq[RoleName] = roles): RoleName = {
     nodesInCluster.length should not be (0)
     nodesInCluster.sorted.head
   }
@@ -377,9 +377,9 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
 
   private def failureDetectorPuppet(address: Address): Option[FailureDetectorPuppet] =
     cluster.failureDetector match {
-      case reg: DefaultFailureDetectorRegistry[Address] ⇒
-        reg.failureDetector(address) collect { case p: FailureDetectorPuppet ⇒ p }
-      case _ ⇒ None
+      case reg: DefaultFailureDetectorRegistry[Address] =>
+        reg.failureDetector(address) collect { case p: FailureDetectorPuppet => p }
+      case _ => None
     }
 
 }

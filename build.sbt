@@ -4,9 +4,9 @@ organization := "com.github.TanUkkii007"
 
 homepage := Some(url("https://github.com/TanUkkii007/akka-cluster-custom-downing"))
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.13.0"
 
-crossScalaVersions := Seq("2.11.8", "2.12.0")
+crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0")
 
 scalacOptions ++= Seq(
   "-feature",
@@ -20,7 +20,7 @@ scalacOptions ++= Seq(
 
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-val akkaVersion = "2.5.9"
+val akkaVersion = "2.5.23"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
 //  "com.typesafe.akka" %% "akka-cluster" % akkaVersion  % "test" classifier "tests",
   "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % Test,
 //  "com.typesafe.akka" %% "akka-testkit" % akkaVersion  % "test" classifier "tests",
-  "org.scalatest" %% "scalatest" % "3.0.4" % Test
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test
 )
 
 compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test)

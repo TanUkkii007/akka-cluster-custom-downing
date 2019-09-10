@@ -28,7 +28,7 @@ abstract class CustomAutoDownBase(autoDownUnreachableAfter: FiniteDuration) exte
 
   def downOrAddPending(member: Member): Unit
 
-  def downOrAddPendingAll(members: Set[Member])
+  def downOrAddPendingAll(members: Set[Member]): Unit
 
   def scheduler: Scheduler
 

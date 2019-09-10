@@ -67,7 +67,7 @@ abstract class MajorityAwareCustomAutoDownBase(autoDownUnreachableAfter: FiniteD
 
   override def initialize(state: CurrentClusterState): Unit = {
     leader = state.leader.exists(_ == selfAddress)
-    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress))
+    roleLeader = state.roleLeaderMap.mapValues(_.exists(_ == selfAddress)).toMap
     membersByAddress = immutable.SortedSet.empty(Member.ordering) union state.members.filterNot {m =>
       m.status == MemberStatus.Removed
     }
