@@ -49,9 +49,7 @@ executeTests in Test <<= (executeTests in Test, executeTests in MultiJvm) map {
 
 configs(MultiJvm)
 
-bintrayOrganization := Some("akka-cluster-custom-downing")
-
-BintrayPlugin.autoImport.bintrayPackage := "bintray-akka-cluster-custom-downing-akka-cluster-custom-downing"
+BintrayPlugin.autoImport.bintrayPackage := "akka-cluster-custom-downing"
 
 enablePlugins(BintrayPlugin, ReleasePlugin)
 
