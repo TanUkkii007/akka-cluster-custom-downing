@@ -13,6 +13,7 @@ jobs:
     docker:
       - image: openjdk:8-jdk
     steps:
+      - run: java -version
       - run:
           name: Get sbt binary
           command: |
