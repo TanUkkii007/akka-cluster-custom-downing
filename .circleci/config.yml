@@ -11,7 +11,7 @@ jobs:
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
       SBT_VERSION: 0.13.16
     docker:
-      - image: openjdk:8
+      - image: openjdk:8-jdk
     steps:
       - run:
           name: Get sbt binary
