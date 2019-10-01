@@ -13,6 +13,8 @@ jobs:
     docker:
       - image: openjdk:8-jdk
     steps:
+      - run: echo 'export JAVA_HOME=/usr/local/openjdk-8' >> $BASH_ENV
+      - run: echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
       - run: java -version
       - run:
           name: Get sbt binary
