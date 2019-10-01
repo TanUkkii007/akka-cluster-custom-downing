@@ -9,7 +9,7 @@ jobs:
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
-      SBT_VERSION: 0.13.16
+      SBT_VERSION: 1.3.2
     docker:
       - image: openjdk:8-jdk
     steps:
