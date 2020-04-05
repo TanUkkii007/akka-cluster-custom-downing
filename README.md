@@ -3,7 +3,7 @@
 
 ## Important Notices
 
-This project is deprecated, because ownership of it was transferred to the following repositor
+This project is deprecated, because ownership of it was transferred to the following repository:
 
 https://github.com/sisioh/akka-cluster-custom-downing
 
