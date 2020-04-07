@@ -1,6 +1,14 @@
 #  akka-cluster-custom-downing
 [![CircleCI](https://circleci.com/gh/TanUkkii007/akka-cluster-custom-downing.svg?style=svg)](https://circleci.com/gh/TanUkkii007/akka-cluster-custom-downing)
 
+## Important Notices
+
+This project is deprecated, because ownership of it was transferred to the following repository:
+
+https://github.com/sisioh/akka-cluster-custom-downing
+
+From now on, contributions will be received in `sisioh/akka-cluster-custom-downing`
+
 ## Introduction
 
 Akka cluster has an `akka.cluster.auto-down-unreachable-after` configuration property.
