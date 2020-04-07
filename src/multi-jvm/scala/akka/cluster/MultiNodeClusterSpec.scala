@@ -65,7 +65,7 @@ object MultiNodeClusterSpec {
 
   class EndActor(testActor: ActorRef, target: Option[Address]) extends Actor {
     import EndActor._
-    def receive = {
+    def receive: Receive = {
       case SendEnd =>
         target foreach { t =>
           context.actorSelection(RootActorPath(t) / self.path.elements) ! End
@@ -81,7 +81,7 @@ object MultiNodeClusterSpec {
 
 trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoroner { self: MultiNodeSpec =>
 
-  override def initialParticipants = roles.size
+  override def initialParticipants: Int = roles.size
 
   private val cachedAddresses = new ConcurrentHashMap[RoleName, Address]
 
@@ -94,7 +94,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     stopCoroner()
   }
 
-  override def expectedTestDuration = 60.seconds
+  override def expectedTestDuration: FiniteDuration = 60.seconds
 
   def muteLog(sys: ActorSystem = system): Unit = {
     if (!sys.log.isDebugEnabled) {
@@ -224,7 +224,6 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
 
     cluster join joinNode
     awaitCond({
-      clusterView.refreshCurrentState()
       if (memberInState(joinNode, List(MemberStatus.up)) &&
         memberInState(myself, List(MemberStatus.Joining, MemberStatus.Up)))
         true
@@ -254,7 +253,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     * be determined from the `RoleName`.
     */
   def assertLeader(nodesInCluster: RoleName*): Unit =
-    if (nodesInCluster.contains(myself)) assertLeaderIn(nodesInCluster.toSeq)
+    if (nodesInCluster.contains(myself)) assertLeaderIn(nodesInCluster)
 
   /**
     * Assert that the cluster has elected the correct leader
@@ -272,7 +271,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
       nodesInCluster.length should not be (0)
       val expectedLeader = roleOfLeader(nodesInCluster)
       val leader = clusterView.leader
-      val isLeader = leader == Some(clusterView.selfAddress)
+      val isLeader = leader.contains(clusterView.selfAddress)
       assert(
         isLeader == isNode(expectedLeader),
         "expectedLeader [%s], got leader [%s], members [%s]".format(expectedLeader, leader, clusterView.members))
@@ -288,7 +287,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
                       canNotBePartOfMemberRing: Set[Address]   = Set.empty,
                       timeout:                  FiniteDuration = 25.seconds): Unit = {
     within(timeout) {
-      if (!canNotBePartOfMemberRing.isEmpty) // don't run this on an empty set
+      if (canNotBePartOfMemberRing.nonEmpty) // don't run this on an empty set
         awaitAssert(canNotBePartOfMemberRing foreach (a => clusterView.members.map(_.address) should not contain (a)))
       awaitAssert(clusterView.members.size should ===(numberOfMembers))
       awaitAssert(clusterView.members.toList.map(_.status).toSet should ===(Set(MemberStatus.Up)))
@@ -337,7 +336,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     */
   def roleOfLeader(nodesInCluster: Seq[RoleName] = roles): RoleName = {
     nodesInCluster.length should not be (0)
-    nodesInCluster.sorted.head
+    nodesInCluster.min
   }
 
   /**
@@ -345,7 +344,7 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
     */
   implicit val clusterOrdering: Ordering[RoleName] = new Ordering[RoleName] {
     import Member.addressOrdering
-    def compare(x: RoleName, y: RoleName) = addressOrdering.compare(address(x), address(y))
+    def compare(x: RoleName, y: RoleName): Int = addressOrdering.compare(address(x), address(y))
   }
 
   def roleName(addr: Address): Option[RoleName] = roles.find(address(_) == addr)

@@ -20,7 +20,7 @@ scalacOptions ++= Seq(
 
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 
-val akkaVersion = "2.5.23"
+val akkaVersion = "2.6.1"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
